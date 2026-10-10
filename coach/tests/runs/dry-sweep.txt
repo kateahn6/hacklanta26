@@ -36,7 +36,7 @@ distinct refs from templates+cases: 24  unresolved: none
   outside allowed set:  none
 
 == ENG-CONV-1  file and heading conventions ==
-  root .md: ['BUILD-BRIEF.md', 'BUILD-STEPS.md', 'COACH-PROMPT.md', 'SPEC.md', 'TEST-CASES.md', 'TEST-LOG.md']
+  root .md: ['BUILD-BRIEF.md', 'BUILD-STEPS.md', 'COACH-PROMPT.md', 'README.md', 'SPEC.md', 'TEST-CASES.md', 'TEST-LOG.md']
   non-conforming names: none
   config files added: none
   templates/IDEA-BRIEF.md: ok

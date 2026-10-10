@@ -41,6 +41,7 @@ flags, or settings.
 
 | File | Responsibility |
 | --- | --- |
+| `README.md` | Folder orientation: file map, how to run the coach and the checks |
 | `BUILD-BRIEF.md` | Source brief (copied verbatim; not edited) |
 | `BUILD-STEPS.md` | Workshop sequence (copied verbatim; not edited) |
 | `SPEC.md` | Requirements, exclusions, acceptance cases (this file) |
