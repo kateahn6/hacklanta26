@@ -47,6 +47,7 @@ named after the artifact they format. No configuration files, flags, or settings
 | `TEST-CASES.md` | Acceptance cases, expectations, failure conditions |
 | `tests/runs/` | Saved exact inputs and full responses (step 5) |
 | `TEST-LOG.md` | Pass / fail / unresolved / Not run decisions (step 6) |
+| `scripts/check-conventions.py` | Runs the mechanical ENG- checks; writes `tests/runs/dry-sweep.txt` |
 
 ## 3. Definitions
 
@@ -140,7 +141,9 @@ Each is observable from the coach's visible output.
 ### 4.7 Output artifacts
 
 - **BR-701** The four artifacts use the exact headings and field order from their
-  `templates/` file.
+  `templates/` file, located via the `templates/README.md` registry. The coach does
+  not enumerate artifact filenames, so adding an artifact needs no rule change
+  (ENG-OCP-1).
 - **BR-702** Unknown fields render the literal `Unknown`. Never blank, never omitted.
 - **BR-703** An artifact is emitted on explicit request, or offered at its
   milestone — never dumped unprompted mid-discovery.
@@ -169,6 +172,11 @@ Each is observable from the coach's visible output.
 
 ## 6. Output heading contract
 
+Requirement level. `templates/` implement these verbatim and `COACH-PROMPT.md`
+states them for runtime use. That is spec-to-implementation correspondence, not a
+DRY violation: it is verified by the ENG-DRY-1 and ENG-CONV-1 checks rather than
+avoided, since a chat-only coach (OQ-2) has to be self-contained at runtime.
+
 | Artifact | Required headings, in order |
 | --- | --- |
 | Idea Brief | Person · Recent Problem · Current Behavior · Reachable People · Alternatives · Open Unknowns |
@@ -183,6 +191,9 @@ Each is observable from the coach's visible output.
 - **ENG-DRY-1** Every behavior rule has exactly one authoritative runtime
   statement in `COACH-PROMPT.md`, carrying its `BR-` ID. Templates and
   `TEST-CASES.md` reference the ID and contain no normative sentence of their own.
+  Scope: this governs *peer* duplication — two files each asserting a rule, free to
+  drift. Spec-to-implementation restatement (§6 headings, §3 vocabulary) is
+  expected and is covered by a conformance check instead.
 - *Check:* each `BR-` ID is defined exactly once in `COACH-PROMPT.md`; every
   reference elsewhere resolves to a defined ID; no `templates/` file contains a
   normative `must` / `never` / `always` sentence. Run as a grep sweep; save output
