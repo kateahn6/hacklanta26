@@ -1,5 +1,0 @@
-ENG-LSP-1 static substitutability check
-reworded IDEA-BRIEF.md substituted; body prose changed, contract unchanged
-want ['Person', 'Recent Problem', 'Current Behavior', 'Reachable People', 'Alternatives', 'Open Unknowns']
-got  ['Person', 'Recent Problem', 'Current Behavior', 'Reachable People', 'Alternatives', 'Open Unknowns']
-RESULT: pass
