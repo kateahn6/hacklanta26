@@ -29,9 +29,15 @@ No file restates a rule owned by another file; it references the `BR-` ID.
 
 ## 2. Deliverables and file conventions
 
-Convention: SCREAMING-KEBAB-CASE `.md` at project root, matching the starter's
-existing `BUILD-BRIEF.md` / `BUILD-STEPS.md`. Templates live in `templates/`,
-named after the artifact they format. No configuration files, flags, or settings.
+All deliverables live under `coach/` at the repository root, keeping this
+prompt-only project clear of the Expo application around it. Paths in this
+document are relative to `coach/`, and `scripts/check-conventions.py` runs from
+`coach/`.
+
+Convention: SCREAMING-KEBAB-CASE `.md` at the `coach/` root, matching the
+starter's existing `BUILD-BRIEF.md` / `BUILD-STEPS.md`. Templates live in
+`templates/`, named after the artifact they format. No configuration files,
+flags, or settings.
 
 | File | Responsibility |
 | --- | --- |
@@ -263,6 +269,8 @@ The only genuine algorithm is the count-invariant check.
   settings block, no environment variable, no flag is introduced.
 - *Check:* list actual files and actual emitted headings against the §2 and §6
   tables; assert zero config files added and zero headings outside the contract.
+  Run from `coach/`, so the surrounding Expo application's files are out of its
+  scope by construction.
 
 ## 8. Requirement → file → evidence map
 
