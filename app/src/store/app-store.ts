@@ -11,14 +11,17 @@ interface AppState {
   userScrapbooks: Scrapbook[];
   /** Postcards and scrapbooks the user deleted. Hides seed items, which can't be removed from the bundle. */
   deletedIds: string[];
+  /** First sign-in on this device per account (Auth0 sub), for "member since" when the API has no date. */
+  firstSeenAt: Record<string, string>;
 
   upsertPlace: (place: Place) => void;
   upsertPostcard: (postcard: Postcard) => void;
   upsertScrapbook: (scrapbook: Scrapbook) => void;
   markDeleted: (id: string) => void;
+  noteFirstSeen: (accountId: string) => void;
 }
 
-type PersistedState = Pick<AppState, 'userPlaces' | 'userPostcards' | 'userScrapbooks' | 'deletedIds'>;
+type PersistedState = Pick<AppState, 'userPlaces' | 'userPostcards' | 'userScrapbooks' | 'deletedIds' | 'firstSeenAt'>;
 
 const upsert = <T extends { id: string }>(list: T[], item: T): T[] =>
   list.some((x) => x.id === item.id) ? list.map((x) => (x.id === item.id ? item : x)) : [...list, item];
@@ -30,6 +33,7 @@ export const useAppStore = create<AppState>()(
       userPostcards: [],
       userScrapbooks: [],
       deletedIds: [],
+      firstSeenAt: {},
 
       upsertPlace: (place) => set((s) => ({ userPlaces: upsert(s.userPlaces, place) })),
       upsertPostcard: (postcard) => set((s) => ({ userPostcards: upsert(s.userPostcards, postcard) })),
@@ -40,16 +44,21 @@ export const useAppStore = create<AppState>()(
           userScrapbooks: s.userScrapbooks.filter((sb) => sb.id !== id),
           deletedIds: s.deletedIds.includes(id) ? s.deletedIds : [...s.deletedIds, id],
         })),
+      noteFirstSeen: (accountId) =>
+        set((s) =>
+          s.firstSeenAt[accountId] ? s : { firstSeenAt: { ...s.firstSeenAt, [accountId]: new Date().toISOString() } },
+        ),
     }),
     {
       name: 'noted.app-state.v1',
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ userPlaces, userPostcards, userScrapbooks, deletedIds }): PersistedState => ({
+      partialize: ({ userPlaces, userPostcards, userScrapbooks, deletedIds, firstSeenAt }): PersistedState => ({
         userPlaces,
         userPostcards,
         userScrapbooks,
         deletedIds,
+        firstSeenAt,
       }),
       // Version 1 scrapbooks were lists of postcards; they can't be shown as photo scrapbooks, so drop them.
       migrate: (persisted, version) => {
@@ -62,6 +71,7 @@ export const useAppStore = create<AppState>()(
           userPostcards: state.userPostcards ?? [],
           userScrapbooks,
           deletedIds: state.deletedIds ?? [],
+          firstSeenAt: state.firstSeenAt ?? {},
         };
       },
     },

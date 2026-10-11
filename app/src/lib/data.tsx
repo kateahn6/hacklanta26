@@ -11,7 +11,6 @@ type DataValue = {
   username: string | null;
   /** When I first signed in, from GET /api/me. */
   memberSince: string | null;
-  friendCount: number;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -26,7 +25,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [returning, setReturning] = useState<ReturningPlace[]>([]);
   const [username, setUsername] = useState<string | null>(null);
   const [memberSince, setMemberSince] = useState<string | null>(null);
-  const [friendCount, setFriendCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +34,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setReturning([]);
       setUsername(null);
       setMemberSince(null);
-      setFriendCount(0);
       return;
     }
     setLoading(true);
@@ -48,12 +45,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const [placesRes, returningRes, meRes] = await Promise.allSettled([
         api<{ places: Place[] }>('/api/places', { token, profile }),
         api<{ returning: ReturningPlace[] }>('/api/returning', { token, profile }),
-        api<{ user: { username?: string; created_at?: string }; friends?: unknown[] }>('/api/me', { token, profile }),
+        api<{ user: { username?: string; created_at?: string } }>('/api/me', { token, profile }),
       ]);
       if (meRes.status === 'fulfilled') {
         setUsername(meRes.value.user.username ?? null);
         setMemberSince(meRes.value.user.created_at ?? null);
-        setFriendCount(meRes.value.friends?.length ?? 0);
       }
       if (placesRes.status === 'fulfilled') {
         setPlaces(placesRes.value.places ?? []);
@@ -94,8 +90,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<DataValue>(
-    () => ({ places, returning, username, memberSince, friendCount, loading, error, refresh, findEntry }),
-    [error, findEntry, friendCount, loading, memberSince, places, refresh, returning, username]
+    () => ({ places, returning, username, memberSince, loading, error, refresh, findEntry }),
+    [error, findEntry, loading, memberSince, places, refresh, returning, username]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

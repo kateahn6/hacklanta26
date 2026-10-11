@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,7 +12,8 @@ import { buildMyPosts } from '@/components/feed/my-post-tile';
 import { DEMO_USER_ID } from '@/data/content-source';
 import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
-import { formatDate, timeSince } from '@/lib/format';
+import { formatDate } from '@/lib/format';
+import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 
@@ -19,14 +21,22 @@ export function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const content = useContent();
   const { session, profile, signOut } = useAuth();
-  const { username, memberSince, friendCount } = useData();
+  const { username, memberSince } = useData();
+  const firstSeenAt = useAppStore((s) => s.firstSeenAt);
+  const noteFirstSeen = useAppStore((s) => s.noteFirstSeen);
+  const accountId = profile.sub;
+  // The server's sign-up date when it has one; otherwise the first sign-in on this device.
+  const joined = memberSince ?? (accountId ? firstSeenAt[accountId] : undefined);
+
+  useEffect(() => {
+    if (accountId) noteFirstSeen(accountId);
+  }, [accountId, noteFirstSeen]);
 
   const me = content.userById.get(DEMO_USER_ID);
   const name = username ?? me?.name ?? 'You';
   const posts = buildMyPosts(content, DEMO_USER_ID);
   const postcards = posts.filter((p) => p.kind === 'postcard').length;
   const scrapbooks = posts.filter((p) => p.kind === 'scrapbook');
-  const drafts = posts.filter((p) => p.item.status === 'draft').length;
 
   const confirmSignOut = () =>
     Alert.alert('Sign out?', 'You can sign back in any time. Drafts stay on this device.', [
@@ -44,21 +54,13 @@ export function ProfileScreen() {
             {name}
           </AppText>
           <AppText variant="body" color={Colors.textMuted} style={styles.center}>
-            {memberSince
-              ? `Member for ${timeSince(memberSince)} · joined ${formatDate(memberSince)}`
-              : session
-                ? 'Loading your membership…'
-                : 'Not signed in'}
+            {joined ? `Member since ${formatDate(joined)}` : 'Not signed in'}
           </AppText>
         </View>
 
         <View style={styles.stats}>
           <InfoTile icon="mail-outline" label="Postcards" value={String(postcards)} />
           <InfoTile icon="albums-outline" label="Scrapbooks" value={String(scrapbooks.length)} />
-        </View>
-        <View style={styles.stats}>
-          <InfoTile icon="create-outline" label="Drafts" value={String(drafts)} />
-          <InfoTile icon="heart-outline" label="Friends" value={String(friendCount)} />
         </View>
 
         <Notice
