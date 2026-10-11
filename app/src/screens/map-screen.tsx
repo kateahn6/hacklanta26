@@ -5,6 +5,7 @@ import { FlatList, Platform, StyleSheet, useWindowDimensions, View } from 'react
 import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ProfileButton } from '@/components/profile/profile-button';
 import { MapMarker } from '@/components/map/map-marker';
 import { PlacePreviewCard } from '@/components/map/place-preview-card';
 import { AppText } from '@/components/ui/app-text';
@@ -122,6 +123,7 @@ export function MapScreen({ home = false }: MapScreenProps) {
         <View style={styles.flex}>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Search places or categories" compact />
         </View>
+        {home ? <ProfileButton /> : null}
       </View>
       {scrapbook ? (
         <View style={styles.scopeRow} pointerEvents="box-none">

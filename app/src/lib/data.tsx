@@ -10,6 +10,9 @@ type DataValue = {
   scrapbooks: ApiScrapbook[];
   /** My random public username, assigned by the API on first sign-in. */
   username: string | null;
+  /** When I first signed in, from GET /api/me. */
+  memberSince: string | null;
+  friendCount: number;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -24,6 +27,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [returning, setReturning] = useState<ReturningPlace[]>([]);
   const [scrapbooks, setScrapbooks] = useState<ApiScrapbook[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [memberSince, setMemberSince] = useState<string | null>(null);
+  const [friendCount, setFriendCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +38,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setReturning([]);
       setScrapbooks([]);
       setUsername(null);
+      setMemberSince(null);
+      setFriendCount(0);
       return;
     }
     setLoading(true);
@@ -45,9 +52,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         api<{ places: Place[] }>('/api/places', { token, profile }),
         api<{ returning: ReturningPlace[] }>('/api/returning', { token, profile }),
         api<{ scrapbooks: ApiScrapbook[] }>('/api/scrapbooks', { token, profile }),
-        api<{ user: { username?: string } }>('/api/me', { token, profile }),
+        api<{ user: { username?: string; created_at?: string }; friends?: unknown[] }>('/api/me', { token, profile }),
       ]);
-      if (meRes.status === 'fulfilled') setUsername(meRes.value.user.username ?? null);
+      if (meRes.status === 'fulfilled') {
+        setUsername(meRes.value.user.username ?? null);
+        setMemberSince(meRes.value.user.created_at ?? null);
+        setFriendCount(meRes.value.friends?.length ?? 0);
+      }
       // Shared scrapbooks are optional: an API without them must not break the map.
       setScrapbooks(scrapbooksRes.status === 'fulfilled' ? (scrapbooksRes.value.scrapbooks ?? []) : []);
       if (placesRes.status === 'fulfilled') {
@@ -89,8 +100,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<DataValue>(
-    () => ({ places, returning, scrapbooks, username, loading, error, refresh, findEntry }),
-    [error, findEntry, loading, places, refresh, returning, scrapbooks, username]
+    () => ({ places, returning, scrapbooks, username, memberSince, friendCount, loading, error, refresh, findEntry }),
+    [error, findEntry, friendCount, loading, memberSince, places, refresh, returning, scrapbooks, username]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

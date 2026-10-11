@@ -10,6 +10,8 @@ export type AuthedUser = {
   username: string;
   email: string | null;
   avatar_url: string | null;
+  /** When the user first signed in: "member since". */
+  created_at: string;
 };
 
 declare global {
@@ -88,7 +90,7 @@ export async function requireUser(req: Request, res: Response, next: NextFunctio
            on conflict (id) do update set
              email = coalesce(excluded.email, users.email),
              avatar_url = coalesce(excluded.avatar_url, users.avatar_url)
-           returning id, username, email, avatar_url`,
+           returning id, username, email, avatar_url, created_at`,
           [sub, email ?? null, avatar ?? null]
         );
       } catch (err) {

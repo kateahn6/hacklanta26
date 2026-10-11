@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MasonryFeed } from '@/components/cards/masonry-feed';
 import { ScrapbookTile } from '@/components/feed/scrapbook-tile';
 import { buildMyPosts, MyPostTile } from '@/components/feed/my-post-tile';
+import { ProfileButton } from '@/components/profile/profile-button';
 import { SectionHeader } from '@/components/feed/section-header';
 import { AppText } from '@/components/ui/app-text';
 import { CategoryChips } from '@/components/ui/category-chips';
@@ -50,7 +51,10 @@ export function DiscoverScreen() {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag">
       <View style={styles.header}>
-        <AppText variant="display">Discover</AppText>
+        <View style={styles.titleRow}>
+          <AppText variant="display">Discover</AppText>
+          <ProfileButton />
+        </View>
         <SearchBar value={query} onChangeText={setQuery} placeholder="Search scrapbooks, places, people" />
       </View>
       {returning.length > 0 && !filtering ? (
@@ -139,6 +143,7 @@ export function DiscoverScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: Gutter, gap: Spacing.md },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
   returning: { paddingHorizontal: Gutter, gap: Spacing.sm, marginTop: Spacing.lg },
   returnRow: {
