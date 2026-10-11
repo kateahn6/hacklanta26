@@ -68,11 +68,9 @@ export function CreatePostcardScreen() {
   const [errors, setErrors] = useState<Errors>({});
   const [tags, setTags] = useState<string[]>([]);
   const [postcardText, setPostcardText] = useState('');
-  const [generating, setGenerating] = useState(false);
   const [polishing, setPolishing] = useState(false);
   const [polishedNothing, setPolishedNothing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const author = content.userById.get(DEMO_USER_ID);
 
@@ -97,46 +95,8 @@ export function CreatePostcardScreen() {
     setCategory(place.categories[0] ?? null);
   };
 
-  /** Photo in, scrapbook page out. The backend falls back to a canned page. */
-  const generate = async () => {
-    if (!photo || typeof photo.source === 'number') {
-      setErrors({ photo: 'Add a photo first so Gemini has something to read.' });
-      return;
-    }
-    setGenerating(true);
-    setErrors({});
-    try {
-      const token = await getAccessToken();
-      // Resized to ~1024px before it leaves the phone.
-      const dataUrl = await toDataUrl(photo.source.uri);
-      const page = await api<ScrapbookPage>('/api/analyze', {
-        method: 'POST',
-        token,
-        profile,
-        body: { photos: [dataUrl], hint: placeName || undefined },
-        timeoutMs: 40_000,
-      });
-      setNote(page.story.slice(0, NOTE_LIMIT));
-      setTags(page.tags);
-      setPostcardText(page.postcard_text);
-      setAiSource(page.source ?? null);
-      if (!placeName.trim()) setPlaceName(page.place_type);
-      if (!category) {
-        const guess = CATEGORIES.find((c) =>
-          page.tags.some((t) => c.id === 'food' ? /coffee|food|bar|market/.test(t) : t.includes(c.id))
-        );
-        if (guess) setCategory(guess.id);
-      }
-    } catch (err: any) {
-      setErrors({ form: err?.message ?? 'Gemini could not read that photo.' });
-    } finally {
-      setGenerating(false);
-    }
-  };
-
   /**
-   * Tidies up what the user already wrote, for when the photo says little or
-   * they would rather write it themselves. Only non-empty fields are applied:
+   * Tidies up what the user already wrote. Only non-empty fields are applied:
    * the server's fallback echoes the original note back with the rest blank,
    * and blanking someone's work would be worse than doing nothing.
    */
@@ -161,7 +121,6 @@ export function CreatePostcardScreen() {
       if (page.tags?.length) setTags(page.tags);
       if (page.postcard_text) setPostcardText(page.postcard_text);
       if (page.place_type && !placeName.trim()) setPlaceName(page.place_type);
-      setAiSource(page.source ?? null);
       // The fallback echoes the text back, so say so rather than looking inert.
       setPolishedNothing(page.source === 'demo');
     } catch (err: any) {
@@ -283,12 +242,6 @@ export function CreatePostcardScreen() {
         right={editing ? <DeleteButton kind="postcard" id={editing.id} /> : null}
       />
 
-      {generating ? (
-        <BusyOverlay
-          title="Reading your photo…"
-          patienceNote="Gemini is writing the page. This can take up to 20 seconds."
-        />
-      ) : null}
       {polishing ? (
         <BusyOverlay
           title="Tidying your words…"
@@ -301,39 +254,6 @@ export function CreatePostcardScreen() {
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />
         </FormField>
 
-        <View style={styles.aiRow}>
-          <Button
-            label="Write from photo"
-            icon="sparkles-outline"
-            variant="secondary"
-            onPress={generate}
-            loading={generating}
-            disabled={!photo || polishing}
-            flex
-          />
-          <Button
-            label="Tidy my words"
-            icon="create-outline"
-            variant="secondary"
-            onPress={polish}
-            loading={polishing}
-            disabled={!note.trim() || generating}
-            flex
-          />
-        </View>
-        {aiSource === 'demo' ? (
-          <Notice
-            icon="cloud-offline-outline"
-            tone="slate"
-            message="Gemini was unavailable, so this is the demo fallback page. Edit it freely."
-          />
-        ) : null}
-        {aiSource === 'gemini' ? (
-          <Notice
-            icon="sparkles"
-            message="Gemini drafted the note and tags from your photo. Edit anything before publishing."
-          />
-        ) : null}
         {polishedNothing ? (
           <Notice
             icon="time-outline"
@@ -394,6 +314,14 @@ export function CreatePostcardScreen() {
             multiline
             maxLength={NOTE_LIMIT}
             invalid={Boolean(errors.note)}
+          />
+          <Button
+            label="Tidy my words"
+            icon="create-outline"
+            variant="secondary"
+            onPress={polish}
+            loading={polishing}
+            disabled={!note.trim()}
           />
         </FormField>
 
@@ -464,7 +392,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
-  aiRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.lg },
   linked: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   suggestion: {
     flexDirection: 'row',
