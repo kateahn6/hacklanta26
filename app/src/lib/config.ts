@@ -13,10 +13,28 @@ export const AUTH0_CLIENT_ID = required(
   process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID,
   'EXPO_PUBLIC_AUTH0_CLIENT_ID'
 );
-export const AUTH0_AUDIENCE = required(
-  process.env.EXPO_PUBLIC_AUTH0_AUDIENCE,
-  'EXPO_PUBLIC_AUTH0_AUDIENCE'
-);
+/**
+ * Auth0 matches the audience as an exact string, so a stray trailing slash
+ * fails with the unhelpful "Service not found: <your audience>". Two people
+ * have lost time to it, so normalise it here and say what happened rather
+ * than letting it reach Auth0.
+ */
+function audience(): string {
+  const raw = required(
+    process.env.EXPO_PUBLIC_AUTH0_AUDIENCE,
+    'EXPO_PUBLIC_AUTH0_AUDIENCE'
+  ).trim();
+  const cleaned = raw.replace(/\/+$/, '');
+  if (cleaned !== raw) {
+    console.warn(
+      `[noted] EXPO_PUBLIC_AUTH0_AUDIENCE had a trailing slash ("${raw}"). ` +
+        `Using "${cleaned}" — Auth0 matches this exactly, so fix it in app/.env.`
+    );
+  }
+  return cleaned;
+}
+
+export const AUTH0_AUDIENCE = audience();
 export const AUTH0_CONNECTION = process.env.EXPO_PUBLIC_AUTH0_CONNECTION ?? '';
 /**
  * The Express server's address. Never localhost: a phone running Expo Go

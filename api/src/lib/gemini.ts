@@ -1,6 +1,23 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
-import { require_ } from './env.js';
+import { env, require_ } from './env.js';
+
+/**
+ * Measured on this project's key with a 1024px photo and the schema below:
+ *
+ *   gemini-2.5-flash / 2.5-pro   404  — withdrawn for new keys
+ *   gemini-3.1-pro-preview       429  — no pro quota on the free tier
+ *   gemini-3.5-flash             503
+ *   gemini-3.8-flash              ok  — 37s with thinking, 3-4s without
+ *
+ * Thinking is on by default and its latency swings wildly (6.7s to 37s on
+ * identical input), which is what was blowing the 8s budget. The work here is
+ * a short piece of descriptive writing, so there is nothing to think about:
+ * thinkingBudget 0 makes it fast and predictable.
+ *
+ * Override with GEMINI_MODEL when a better model becomes available.
+ */
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 
 export type ScrapbookPage = {
   place_type: string;
@@ -31,6 +48,24 @@ Return JSON only:
 - story: 2-3 sentences, first person, about being there
 - tags: 3-5 lowercase tags, no "#"
 - postcard_text: 1-2 sentences written to a friend, like the back of a postcard`;
+
+const POLISH_PROMPT = `You are tidying up a note someone wrote about a real place
+they visited, for a shared travel scrapbook. Think Grammarly, not a ghostwriter.
+
+Rules:
+- Keep their meaning, their opinions and their voice. Do not invent details,
+  places, prices, names or events that are not in what they wrote.
+- Fix spelling, grammar and punctuation. Tighten rambling sentences.
+- If the note is very short, you may smooth it, but do not pad it out with
+  things they did not say.
+- Never add ratings, stars or scores.
+
+Return JSON only:
+- place_type: 2-4 words for the kind of place, inferred only from their note
+- caption: one warm line, under 80 characters
+- story: their note, rewritten clean, 2-3 sentences, first person
+- tags: 3-5 lowercase tags drawn from what they actually mentioned
+- postcard_text: 1-2 sentences to a friend, in their voice`;
 
 export const CANNED: ScrapbookPage = {
   place_type: 'neighborhood coffee bar',
@@ -70,6 +105,28 @@ function parse(text: string): ScrapbookPage {
   };
 }
 
+/**
+ * Rewrites a note the user typed, rather than reading a photo. Used when the
+ * photos are unhelpful, or when someone writes their own entry and just wants
+ * it tidied.
+ */
+export async function polishText(text: string, hint?: string): Promise<ScrapbookPage> {
+  const ai = new GoogleGenAI({ apiKey: require_('GEMINI_API_KEY') });
+  const where = hint ? `\n\nThe place is called: ${hint}` : '';
+  const result = await ai.models.generateContent({
+    model: env('GEMINI_MODEL') ?? DEFAULT_MODEL,
+    contents: [{ role: 'user', parts: [{ text: `${POLISH_PROMPT}${where}\n\nTheir note:\n${text}` }] }],
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: RESPONSE_SCHEMA as any,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
+  const out = result.text;
+  if (!out) throw new Error('Gemini returned no text');
+  return parse(out);
+}
+
 export async function analyzePhotos(
   photos: string[],
   hint?: string
@@ -83,11 +140,12 @@ export async function analyzePhotos(
   }
 
   const result = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: env('GEMINI_MODEL') ?? DEFAULT_MODEL,
     contents: [{ role: 'user', parts }],
     config: {
       responseMimeType: 'application/json',
       responseSchema: RESPONSE_SCHEMA as any,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
 

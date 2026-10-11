@@ -16,7 +16,7 @@ export function isScrapbookPublic(scrapbook: Scrapbook): boolean {
 
 export const isOwn = (item: { authorId: string }) => item.authorId === DEMO_USER_ID;
 
-/** What the demo user may open: public content plus everything they own. */
+/** What the signed-in user may open: public content plus everything they own. */
 export const canViewPostcard = (postcard: Postcard, now: number) => isPostcardPublic(postcard, now) || isOwn(postcard);
 export const canViewScrapbook = (scrapbook: Scrapbook) => isScrapbookPublic(scrapbook) || isOwn(scrapbook);
 

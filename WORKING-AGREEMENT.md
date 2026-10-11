@@ -127,6 +127,28 @@ psql "$DATABASE_URL" -f sql/seed.sql
 
 All three are re-runnable. `sql/reset.sql` drops everything.
 
+**Two login errors that are really `.env` typos.** Auth0 matches these as
+exact strings, and its error messages are not obvious:
+
+| Auth0 says | Cause |
+| --- | --- |
+| *Service not found: https://unfold-api/* | trailing slash on `EXPO_PUBLIC_AUTH0_AUDIENCE` |
+| *Callback URL mismatch* | your redirect URI is not in Allowed Callback URLs |
+
+The audience must be exactly `https://unfold-api` — no trailing slash, no
+quotes, no spaces around the `=`. Check yours with:
+
+```bash
+cd app && grep AUDIENCE .env | od -c | head -2
+```
+
+The app now trims a trailing slash and warns in the terminal rather than
+failing, but fix the file so the warning goes away.
+
+Each teammate also has their **own** Expo tunnel host, so everyone's redirect
+URI needs adding to Allowed Callback URLs. The field takes a comma-separated
+list, so add them all at once.
+
 **`unfold` still appears in identifiers and that's deliberate.** The Auth0
 audience (`https://unfold-api`), the URI scheme and the SecureStore key prefix
 keep the old name. Renaming them breaks the Auth0 callback and signs everyone
