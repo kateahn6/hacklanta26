@@ -13,7 +13,7 @@ import { Notice } from '@/components/ui/notice';
 import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
-import { DEMO_USER_ID } from '@/data/content-source';
+import { currentUserId } from '@/lib/me';
 import { newId } from '@/lib/format';
 import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
@@ -42,7 +42,7 @@ export function CreateScrapbookScreen() {
   const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [errors, setErrors] = useState<Errors>({});
   const [previewing, setPreviewing] = useState(false);
-  const author = content.userById.get(DEMO_USER_ID);
+  const author = content.userById.get(currentUserId());
 
   const validate = (status: PublishStatus): boolean => {
     const found: Errors = {};
@@ -67,7 +67,7 @@ export function CreateScrapbookScreen() {
       title: title.trim(),
       description: description.trim(),
       city: city.trim() || 'Atlanta',
-      authorId: DEMO_USER_ID,
+      authorId: currentUserId(),
       cover,
       categories: category ? [category] : [],
       media,

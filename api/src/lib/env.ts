@@ -6,6 +6,8 @@ type Key =
   | 'AUTH0_AUDIENCE'
   | 'DATABASE_URL'
   | 'GEMINI_API_KEY'
+  | 'GEMINI_MODEL'
+  | 'GEMINI_TIMEOUT_MS'
   | 'DEMO_MODE';
 
 /** Variables without which the server cannot answer a single request. */

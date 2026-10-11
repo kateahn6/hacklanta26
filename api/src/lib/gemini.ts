@@ -1,6 +1,23 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
-import { require_ } from './env.js';
+import { env, require_ } from './env.js';
+
+/**
+ * Measured on this project's key with a 1024px photo and the schema below:
+ *
+ *   gemini-2.5-flash / 2.5-pro   404  — withdrawn for new keys
+ *   gemini-3.1-pro-preview       429  — no pro quota on the free tier
+ *   gemini-3.5-flash             503
+ *   gemini-3.8-flash              ok  — 37s with thinking, 3-4s without
+ *
+ * Thinking is on by default and its latency swings wildly (6.7s to 37s on
+ * identical input), which is what was blowing the 8s budget. The work here is
+ * a short piece of descriptive writing, so there is nothing to think about:
+ * thinkingBudget 0 makes it fast and predictable.
+ *
+ * Override with GEMINI_MODEL when a better model becomes available.
+ */
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 
 export type ScrapbookPage = {
   place_type: string;
@@ -83,11 +100,12 @@ export async function analyzePhotos(
   }
 
   const result = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: env('GEMINI_MODEL') ?? DEFAULT_MODEL,
     contents: [{ role: 'user', parts }],
     config: {
       responseMimeType: 'application/json',
       responseSchema: RESPONSE_SCHEMA as any,
+      thinkingConfig: { thinkingBudget: 0 },
     },
   });
 

@@ -17,7 +17,7 @@ import { SegmentedControl } from '@/components/ui/segmented-control';
 import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
-import { DEMO_USER_ID } from '@/data/content-source';
+import { currentUserId } from '@/lib/me';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
@@ -70,7 +70,7 @@ export function CreatePostcardScreen() {
   const [saving, setSaving] = useState(false);
   const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
-  const author = content.userById.get(DEMO_USER_ID);
+  const author = content.userById.get(currentUserId());
 
   const linkedPlace = linkedPlaceId ? content.placeById.get(linkedPlaceId) : undefined;
   const q = placeName.trim().toLowerCase();
@@ -220,7 +220,7 @@ export function CreatePostcardScreen() {
     const postcard: Postcard = {
       id: editing?.id ?? newId('pc'),
       placeId,
-      authorId: DEMO_USER_ID,
+      authorId: currentUserId(),
       photo,
       note: note.trim(),
       visibility,

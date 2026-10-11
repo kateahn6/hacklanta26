@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
 import type { Entry, Place as ApiPlace, ReturningPlace } from '@/lib/types';
 import type { CategoryId, Place, Postcard, Scrapbook, User } from '@/types';
@@ -77,6 +78,7 @@ export interface ApiContent {
 
 export function useApiContent(): ApiContent {
   const { places: apiPlaces, returning, loading, error } = useData();
+  const { profile } = useAuth();
 
   return useMemo(() => {
     const places: Place[] = [];
@@ -138,6 +140,17 @@ export function useApiContent(): ApiContent {
       }
     }
 
+    // The signed-in user may have written nothing yet, but still has to appear
+    // in the directory: the create screen shows them as the author in preview.
+    if (profile.sub && !users.has(profile.sub)) {
+      users.set(profile.sub, {
+        id: profile.sub,
+        name: profile.name ?? 'You',
+        handle: handleFor(profile.name ?? null, profile.sub),
+        neighborhood: 'Atlanta',
+      });
+    }
+
     postcards.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
     return {
@@ -149,5 +162,5 @@ export function useApiContent(): ApiContent {
       loading,
       error,
     };
-  }, [apiPlaces, error, loading, returning]);
+  }, [apiPlaces, error, loading, profile, returning]);
 }

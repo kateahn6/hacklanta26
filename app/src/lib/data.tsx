@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { setCurrentUserId } from '@/lib/me';
 import type { Entry, Place, ReturningPlace } from '@/lib/types';
 
 type DataValue = {
@@ -17,6 +18,10 @@ const DataContext = createContext<DataValue | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { session, profile, getAccessToken, signOut } = useAuth();
+
+  // Ownership checks and "your posts" run off this, and plain helpers read it
+  // outside React, so it is set before any screen renders.
+  setCurrentUserId(session ? profile.sub : null);
   const [places, setPlaces] = useState<Place[]>([]);
   const [returning, setReturning] = useState<ReturningPlace[]>([]);
   const [loading, setLoading] = useState(false);
