@@ -1,1 +1,5 @@
-export { ExploreScreen as default } from '@/screens/explore-screen';
+import { MapScreen } from '@/screens/map-screen';
+
+export default function HomeMapScreen() {
+  return <MapScreen home />;
+}

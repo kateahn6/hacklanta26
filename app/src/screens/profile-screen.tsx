@@ -158,7 +158,7 @@ export function ProfileScreen() {
         </View>
         <Notice
           icon="people-outline"
-          message="Your published postcards are shared with the friends on your map. Drafts and saves stay on this device."
+          message="Your published postcards are shared with the friends on your map. Drafts stay on this device."
         />
 
         <View style={styles.section}>

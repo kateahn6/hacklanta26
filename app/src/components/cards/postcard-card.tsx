@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import type { PostcardItem } from '@/lib/feed';
 import { Colors, Radius, Spacing } from '@/theme/tokens';
 
@@ -27,9 +26,6 @@ export function PostcardCard({ item, aspect, now, onPress }: PostcardCardProps) 
       style={styles.card}>
       <View style={styles.mat}>
         <PhotoView photo={item.photo} aspect={aspect} style={styles.photo} />
-        <View style={styles.save}>
-          <SaveButton kind="postcard" id={item.postcard.id} />
-        </View>
         <View style={styles.badges}>
           <StatusBadges item={item.postcard} now={now} />
         </View>
@@ -57,7 +53,6 @@ const styles = StyleSheet.create({
     boxShadow: '0 1px 4px rgba(33, 31, 28, 0.10)',
   },
   photo: { width: '100%', borderRadius: 3 },
-  save: { position: 'absolute', top: 11, right: 11 },
   badges: { position: 'absolute', left: 11, bottom: 20, right: 11 },
   text: { gap: 3, paddingHorizontal: 2 },
 });

@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/app-text';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import type { ScrapbookItem } from '@/lib/feed';
 import { Colors, Fonts, Radius, Spacing } from '@/theme/tokens';
 
@@ -31,9 +30,6 @@ export function ScrapbookCard({ item, aspect, now, onPress }: ScrapbookCardProps
         <View style={[styles.page, styles.pageMid]} />
         <View style={styles.cover}>
           <PhotoView photo={item.cover} aspect={aspect} style={styles.photo} />
-          <View style={styles.save}>
-            <SaveButton kind="scrapbook" id={item.scrapbook.id} />
-          </View>
           <View style={styles.count}>
             <Ionicons name="albums-outline" size={12} color={Colors.cream} />
             <AppText style={styles.countText}>{item.stops.length} places</AppText>
@@ -60,7 +56,6 @@ const styles = StyleSheet.create({
   pageMid: { backgroundColor: Colors.caramel, top: 4, left: 4, right: 3, transform: [{ rotate: '-1.5deg' }] },
   cover: { borderRadius: Radius.md, overflow: 'hidden', backgroundColor: Colors.creamDeep },
   photo: { width: '100%' },
-  save: { position: 'absolute', top: 8, right: 8 },
   count: {
     position: 'absolute',
     left: 8,

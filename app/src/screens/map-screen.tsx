@@ -6,17 +6,15 @@ import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MapMarker } from '@/components/map/map-marker';
-import { PlaceGallery } from '@/components/map/place-gallery';
 import { PlacePreviewCard } from '@/components/map/place-preview-card';
 import { AppText } from '@/components/ui/app-text';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CategoryChips } from '@/components/ui/category-chips';
-import { EmptyState } from '@/components/ui/empty-state';
 import { IconButton } from '@/components/ui/icon-button';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
-import { SegmentedControl } from '@/components/ui/segmented-control';
-import { CITY_REGION } from '@/data/content-source';
+import { CITY_REGION, DEMO_USER_ID } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
 import { buildMapPlaces, filterMapPlaces, type MapPlace } from '@/lib/map-places';
 import { notedMapStyle } from '@/lib/map-style';
@@ -24,14 +22,17 @@ import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 import type { CategoryId, Coordinate } from '@/types';
 
-type View_ = 'map' | 'gallery';
-
 const MAP_LOAD_TIMEOUT_MS = 12_000;
 const CARD_GAP = Spacing.md;
 const PLACE_DELTA = 0.018;
 
-export function MapScreen() {
-  const params = useLocalSearchParams<{ placeId?: string; scrapbookId?: string; view?: string }>();
+interface MapScreenProps {
+  /** Home tab: avatar and Ask Noted! instead of a back button, and the tab bar below. */
+  home?: boolean;
+}
+
+export function MapScreen({ home = false }: MapScreenProps) {
+  const params = useLocalSearchParams<{ placeId?: string; scrapbookId?: string }>();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const content = useContent();
@@ -39,7 +40,6 @@ export function MapScreen() {
   const mapRef = useRef<MapView>(null);
   const listRef = useRef<FlatList<MapPlace>>(null);
 
-  const [mode, setMode] = useState<View_>(params.view === 'gallery' ? 'gallery' : 'map');
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<CategoryId | null>(null);
   const [scrapbookId, setScrapbookId] = useState<string | undefined>(params.scrapbookId);
@@ -48,6 +48,7 @@ export function MapScreen() {
   const [mapFailed, setMapFailed] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
 
+  const me = content.userById.get(DEMO_USER_ID);
   const scrapbook = scrapbookId ? content.scrapbookById.get(scrapbookId) : undefined;
   const allPlaces = buildMapPlaces(
     content,
@@ -60,10 +61,10 @@ export function MapScreen() {
 
   // A map that never reports ready (no tiles, missing config) gets an honest error state.
   useEffect(() => {
-    if (mode !== 'map' || mapReady) return;
+    if (mapReady) return;
     const timer = setTimeout(() => setMapFailed(true), MAP_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timer);
-  }, [mode, mapReady, mapAttempt]);
+  }, [mapReady, mapAttempt]);
 
   const focusOn = (coordinate: Coordinate) => {
     mapRef.current?.animateToRegion(
@@ -99,20 +100,6 @@ export function MapScreen() {
     mapRef.current?.animateToRegion(CITY_REGION, 450);
   };
 
-  // The map remounts when returning from the gallery; onMapReady then focuses the selection.
-  const changeMode = (next: View_) => {
-    if (next === 'map' && mode !== 'map') {
-      setMapReady(false);
-      setMapFailed(false);
-    }
-    setMode(next);
-  };
-
-  const showOnMap = (placeId: string) => {
-    setSelectedId(placeId);
-    changeMode('map');
-  };
-
   const retryMap = () => {
     setMapFailed(false);
     setMapReady(false);
@@ -124,39 +111,27 @@ export function MapScreen() {
     setCategory(null);
   };
 
-  const noResults = (
-    <EmptyState
-      icon="location-outline"
-      title="No places match"
-      message="Try a different search or category."
-      actionLabel="Clear filters"
-      onAction={clearFilters}
-    />
-  );
-
   const header = (
     <View
-      style={[styles.header, { paddingTop: insets.top + Spacing.sm }, mode === 'gallery' && styles.headerSolid]}
+      style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}
       pointerEvents="box-none">
       <View style={styles.searchRow} pointerEvents="box-none">
-        <IconButton icon="arrow-back" label="Back to Explore" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
+        {home ? (
+          me ? (
+            <PressableScale accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={4} onPress={() => router.push('/profile')} style={styles.avatar}>
+              <Avatar user={me} size={44} />
+            </PressableScale>
+          ) : null
+        ) : (
+          <IconButton icon="arrow-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
+        )}
         <View style={styles.flex}>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Search places or categories" compact />
         </View>
+        {home ? <IconButton icon="sparkles-outline" label="Ask Noted! for recommendations" onPress={() => router.push('/ask')} variant="cherry" /> : null}
       </View>
-      <View style={styles.toggleRow} pointerEvents="box-none">
-        <View style={styles.toggle}>
-          <SegmentedControl<View_>
-            value={mode}
-            onChange={changeMode}
-            floating
-            options={[
-              { value: 'map', label: 'Map' },
-              { value: 'gallery', label: 'Gallery' },
-            ]}
-          />
-        </View>
-        {scrapbook ? (
+      {scrapbook ? (
+        <View style={styles.scopeRow} pointerEvents="box-none">
           <PressableScale
             accessibilityRole="button"
             accessibilityLabel={`Showing places from ${scrapbook.title}. Show all places`}
@@ -168,22 +143,13 @@ export function MapScreen() {
             </AppText>
             <Ionicons name="close" size={14} color={Colors.cream} />
           </PressableScale>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
       <View style={styles.chips}>
         <CategoryChips value={category} onChange={setCategory} floating />
       </View>
     </View>
   );
-
-  if (mode === 'gallery') {
-    return (
-      <View style={styles.screen}>
-        {header}
-        <PlaceGallery places={places} onShowOnMap={showOnMap} empty={noResults} />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.screen}>
@@ -227,17 +193,17 @@ export function MapScreen() {
             <Ionicons name="cloud-offline-outline" size={26} color={Colors.cherry} />
             <AppText variant="subheading">The map didn’t load</AppText>
             <AppText variant="caption" style={styles.center}>
-              Map tiles couldn’t be reached. Check your connection, or browse the same places as a gallery.
+              Map tiles couldn’t be reached. Check your connection, or browse the same places in Discover.
             </AppText>
             <View style={styles.errorActions}>
               <Button label="Try again" variant="secondary" onPress={retryMap} flex />
-              <Button label="Show gallery" onPress={() => changeMode('gallery')} flex />
+              <Button label="Browse Discover" onPress={() => router.navigate('/discover')} flex />
             </View>
           </View>
         </View>
       ) : null}
 
-      <View style={[styles.bottom, { paddingBottom: insets.bottom + Spacing.md }]} pointerEvents="box-none">
+      <View style={[styles.bottom, { paddingBottom: (home ? 0 : insets.bottom) + Spacing.md }]} pointerEvents="box-none">
         <View style={styles.recenterRow} pointerEvents="box-none">
           <IconButton icon="locate-outline" label="Recenter map on Atlanta" onPress={recenter} />
         </View>
@@ -278,10 +244,9 @@ const styles = StyleSheet.create({
   flexShrink: { flexShrink: 1 },
   center: { textAlign: 'center' },
   header: { position: 'absolute', top: 0, left: 0, right: 0, gap: Spacing.sm, zIndex: 5 },
-  headerSolid: { position: 'relative', backgroundColor: Colors.cream, paddingBottom: Spacing.md },
+  avatar: { borderRadius: 22, boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
-  toggle: { width: 180 },
+  scopeRow: { flexDirection: 'row', paddingHorizontal: Gutter },
   scope: {
     flexShrink: 1,
     flexDirection: 'row',

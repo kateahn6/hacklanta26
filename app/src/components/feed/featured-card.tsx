@@ -5,7 +5,6 @@ import { AuthorLine } from '@/components/cards/author-line';
 import { AppText } from '@/components/ui/app-text';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import type { ScrapbookItem } from '@/lib/feed';
 import { openScrapbook } from '@/lib/navigation';
 import { Colors, Radius, Spacing } from '@/theme/tokens';
@@ -23,9 +22,6 @@ export function FeaturedCard({ item }: { item: ScrapbookItem }) {
           <AppText variant="overline" color={Colors.cream}>
             Featured scrapbook
           </AppText>
-        </View>
-        <View style={styles.save}>
-          <SaveButton kind="scrapbook" id={item.scrapbook.id} />
         </View>
       </View>
       <View style={styles.body}>
@@ -59,7 +55,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: Radius.pill,
   },
-  save: { position: 'absolute', right: Spacing.md, top: Spacing.md },
   body: { padding: Spacing.lg, gap: Spacing.sm },
   footer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: Spacing.xs },
   cta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
