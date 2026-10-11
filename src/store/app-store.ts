@@ -2,9 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { Photo, Place, Postcard, SavedKind, SavedRef, Scrapbook, ScrapbookStop, Visibility } from '@/types';
-
-export const savedKey = (ref: SavedRef) => `${ref.kind}:${ref.id}`;
+import type { Photo, Place, Postcard, Scrapbook, ScrapbookStop, Visibility } from '@/types';
 
 /** Working state of the scrapbook form, shared with the "add postcards" screens. */
 export interface ScrapbookComposer {
@@ -22,11 +20,9 @@ interface AppState {
   userPlaces: Place[];
   userPostcards: Postcard[];
   userScrapbooks: Scrapbook[];
-  saved: string[];
   defaultVisibility: Visibility;
   composer: ScrapbookComposer | null;
 
-  toggleSaved: (ref: SavedRef) => void;
   upsertPlace: (place: Place) => void;
   upsertPostcard: (postcard: Postcard) => void;
   upsertScrapbook: (scrapbook: Scrapbook) => void;
@@ -49,15 +45,9 @@ export const useAppStore = create<AppState>()(
       userPlaces: [],
       userPostcards: [],
       userScrapbooks: [],
-      saved: ['scrapbook:sb-quiet-afternoon', 'postcard:pc-variety-front-row', 'postcard:pc-garden-bloom'],
       defaultVisibility: 'public',
       composer: null,
 
-      toggleSaved: (ref) =>
-        set((s) => {
-          const key = savedKey(ref);
-          return { saved: s.saved.includes(key) ? s.saved.filter((k) => k !== key) : [key, ...s.saved] };
-        }),
       upsertPlace: (place) => set((s) => ({ userPlaces: upsert(s.userPlaces, place) })),
       upsertPostcard: (postcard) => set((s) => ({ userPostcards: upsert(s.userPostcards, postcard) })),
       upsertScrapbook: (scrapbook) => set((s) => ({ userScrapbooks: upsert(s.userScrapbooks, scrapbook) })),
@@ -88,17 +78,12 @@ export const useAppStore = create<AppState>()(
     {
       name: 'noted.app-state.v1',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ userPlaces, userPostcards, userScrapbooks, saved, defaultVisibility }) => ({
+      partialize: ({ userPlaces, userPostcards, userScrapbooks, defaultVisibility }) => ({
         userPlaces,
         userPostcards,
         userScrapbooks,
-        saved,
         defaultVisibility,
       }),
     },
   ),
 );
-
-export function useIsSaved(kind: SavedKind, id: string): boolean {
-  return useAppStore((s) => s.saved.includes(savedKey({ kind, id })));
-}

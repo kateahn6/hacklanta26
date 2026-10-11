@@ -12,10 +12,9 @@ import { Colors, Fonts, Spacing } from '@/theme/tokens';
 const TABS: Record<string, { label: string; icon: IconName; activeIcon: IconName }> = {
   index: { label: 'Explore', icon: 'map-outline', activeIcon: 'map' },
   discover: { label: 'Discover', icon: 'grid-outline', activeIcon: 'grid' },
-  saved: { label: 'Saved', icon: 'bookmark-outline', activeIcon: 'bookmark' },
 };
 
-/** Explore · Discover · Create · Saved. Create opens an action sheet instead of a screen. */
+/** Explore · Create · Discover. Create opens an action sheet instead of a screen. */
 export function TabBar({ state, navigation, insets }: BottomTabBarProps) {
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -48,7 +47,6 @@ export function TabBar({ state, navigation, insets }: BottomTabBarProps) {
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, Spacing.md) }]}>
       {renderTab('index')}
-      {renderTab('discover')}
       <PressableScale
         accessibilityRole="button"
         accessibilityLabel="Create a postcard or scrapbook"
@@ -59,7 +57,7 @@ export function TabBar({ state, navigation, insets }: BottomTabBarProps) {
         </View>
         <AppText style={[styles.label, styles.createLabel]}>Create</AppText>
       </PressableScale>
-      {renderTab('saved')}
+      {renderTab('discover')}
       <CreateActionSheet visible={createOpen} onClose={() => setCreateOpen(false)} />
     </View>
   );

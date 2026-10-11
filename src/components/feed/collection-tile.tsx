@@ -4,7 +4,6 @@ import { AuthorLine } from '@/components/cards/author-line';
 import { AppText } from '@/components/ui/app-text';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import type { ScrapbookItem } from '@/lib/feed';
 import { openScrapbook } from '@/lib/navigation';
 import { Colors, Fonts, Radius, Spacing } from '@/theme/tokens';
@@ -19,9 +18,6 @@ export function CollectionTile({ item, width }: { item: ScrapbookItem; width: nu
       style={[styles.tile, { width }]}>
       <View style={styles.photoWrap}>
         <PhotoView photo={item.cover} aspect={1.2} style={styles.photo} />
-        <View style={styles.save}>
-          <SaveButton kind="scrapbook" id={item.scrapbook.id} />
-        </View>
         <View style={styles.count}>
           <AppText style={styles.countText}>{item.stops.length} places</AppText>
         </View>
@@ -38,7 +34,6 @@ const styles = StyleSheet.create({
   tile: { gap: Spacing.sm },
   photoWrap: { borderRadius: Radius.lg, overflow: 'hidden' },
   photo: { width: '100%' },
-  save: { position: 'absolute', top: 8, right: 8 },
   count: {
     position: 'absolute',
     left: 8,

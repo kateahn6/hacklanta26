@@ -11,7 +11,6 @@ import { InfoTile } from '@/components/ui/info-tile';
 import { Notice } from '@/components/ui/notice';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import { TopBar } from '@/components/ui/top-bar';
 import { categoryById } from '@/data/categories';
 import { useNow } from '@/hooks/use-now';
@@ -54,7 +53,7 @@ export function PostcardDetailScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar right={postcard.status === 'published' ? <SaveButton kind="postcard" id={postcard.id} /> : null} />
+      <TopBar />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.xxxl }]}>
         {justPublished ? (
           <Notice

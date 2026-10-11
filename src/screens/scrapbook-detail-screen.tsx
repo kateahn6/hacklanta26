@@ -11,7 +11,6 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Notice } from '@/components/ui/notice';
 import { PhotoView } from '@/components/ui/photo-view';
 import { PressableScale } from '@/components/ui/pressable-scale';
-import { SaveButton } from '@/components/ui/save-button';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { TopBar } from '@/components/ui/top-bar';
 import { useNow } from '@/hooks/use-now';
@@ -144,7 +143,6 @@ export function ScrapbookDetailScreen() {
           </View>
 
           <View style={styles.actions}>
-            {scrapbook.status === 'published' ? <SaveButton kind="scrapbook" id={scrapbook.id} variant="pill" /> : null}
             <Button
               label="See on map"
               icon="map-outline"

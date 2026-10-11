@@ -100,7 +100,7 @@ export function ProfileScreen() {
             @{me.handle} · {me.neighborhood}
           </AppText>
         </View>
-        <Notice icon="phone-portrait-outline" message="Demo profile. Your posts, drafts, and saves are stored on this device only." />
+        <Notice icon="phone-portrait-outline" message="Demo profile. Your posts and drafts are stored on this device only." />
 
         <View style={styles.section}>
           <AppText variant="heading">Privacy</AppText>

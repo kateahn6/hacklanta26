@@ -84,10 +84,3 @@ export interface RecommendationResult {
   /** 'sample' until a backend endpoint calls Gemini. */
   source: 'sample';
 }
-
-export type SavedKind = 'postcard' | 'scrapbook';
-
-export interface SavedRef {
-  kind: SavedKind;
-  id: string;
-}
