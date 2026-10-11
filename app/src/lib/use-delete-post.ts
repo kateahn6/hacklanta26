@@ -19,7 +19,7 @@ function leaveAfterDelete() {
  * there; seed and device-local posts are hidden on this device.
  */
 export function useDeletePost() {
-  const { places, findEntry, refresh } = useData();
+  const { places, scrapbooks, findEntry, refresh } = useData();
   const { getAccessToken, profile } = useAuth();
   const markDeleted = useAppStore((s) => s.markDeleted);
 
@@ -27,9 +27,15 @@ export function useDeletePost() {
   const isSharedScrapbook = (id: string) => places.some((place) => `sb-${place.id}` === id);
 
   const remove = async (kind: PostKind, id: string) => {
-    if (kind === 'postcard' && findEntry(id)) {
+    const remotePath =
+      kind === 'postcard' && findEntry(id)
+        ? `/api/entries/${id}`
+        : kind === 'scrapbook' && scrapbooks.some((s) => s.id === id)
+          ? `/api/scrapbooks/${id}`
+          : null;
+    if (remotePath) {
       const token = await getAccessToken();
-      await api(`/api/entries/${id}`, { method: 'DELETE', token, profile });
+      await api(remotePath, { method: 'DELETE', token, profile });
       markDeleted(id);
       await refresh();
     } else {

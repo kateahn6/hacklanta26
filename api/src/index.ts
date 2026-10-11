@@ -187,6 +187,268 @@ authed.delete('/entries/:id', route(async (req, res) => {
   res.json({ deleted: rows[0].id });
 }));
 
+// ---------------------------------------------------------------------------
+// Shared scrapbooks. The owner can change everything; members (anyone who
+// joined with the access code) can add photos and edit or remove their own.
+// ---------------------------------------------------------------------------
+
+const UUID = /^[0-9a-f-]{36}$/i;
+const MAX_PHOTO_CHARS = 3_000_000; // ~2 MB of base64 per photo
+
+type MediaInput = { id?: unknown; photo_url?: unknown; aspect?: unknown; caption?: unknown };
+
+const isPhotoUrl = (v: unknown): v is string =>
+  typeof v === 'string' && v.length <= MAX_PHOTO_CHARS && (v.startsWith('data:image/') || v.startsWith('https://'));
+const cleanCaption = (v: unknown) => (typeof v === 'string' && v.trim() ? v.trim().slice(0, 80) : null);
+const cleanAspect = (v: unknown) => (typeof v === 'number' && v > 0.1 && v < 10 ? v : 1);
+const cleanText = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+const cleanCategories = (v: unknown) =>
+  Array.isArray(v) ? v.filter((c): c is string => typeof c === 'string').slice(0, 6) : [];
+
+/** One scrapbook with members and ordered media. The code is only revealed to members. */
+const SCRAPBOOK_SELECT = `
+  select s.id, s.owner_id, o.name as owner_name, s.title, s.description, s.city, s.categories,
+         s.cover_url, s.cover_aspect, s.visibility, s.created_at, s.updated_at,
+         case when exists (select 1 from scrapbook_members m where m.scrapbook_id = s.id and m.user_id = $1)
+              then s.access_code end as access_code,
+         coalesce((select json_agg(json_build_object('id', m.user_id, 'name', u.name) order by m.joined_at)
+                   from scrapbook_members m join users u on u.id = m.user_id
+                   where m.scrapbook_id = s.id), '[]') as members,
+         coalesce((select json_agg(json_build_object(
+                     'id', md.id, 'author_id', md.author_id, 'photo_url', md.photo_url,
+                     'aspect', md.aspect, 'caption', md.caption) order by md.position, md.created_at)
+                   from scrapbook_media md where md.scrapbook_id = s.id), '[]') as media
+  from scrapbooks s join users o on o.id = s.owner_id`;
+
+async function loadScrapbook(meId: string, id: string) {
+  const rows = await query(`${SCRAPBOOK_SELECT} where s.id = $2`, [meId, id]);
+  return rows[0] ?? null;
+}
+
+async function membership(meId: string, id: string) {
+  const rows = await query<{ owner_id: string; is_member: boolean }>(
+    `select s.owner_id,
+            exists (select 1 from scrapbook_members m where m.scrapbook_id = s.id and m.user_id = $1) as is_member
+     from scrapbooks s where s.id = $2`,
+    [meId, id]
+  );
+  return rows[0] ?? null;
+}
+
+/** Scrapbooks I belong to, plus public ones by me or my friends. */
+authed.get('/scrapbooks', route(async (req, res) => {
+  const me = user(req);
+  const scrapbooks = await query(
+    `${SCRAPBOOK_SELECT}
+     where exists (select 1 from scrapbook_members m where m.scrapbook_id = s.id and m.user_id = $1)
+        or (s.visibility = 'public'
+            and (s.owner_id = $1 or s.owner_id in (select friend_id from friendships where user_id = $1)))
+     order by s.created_at desc`,
+    [me.id]
+  );
+  res.json({ scrapbooks });
+}));
+
+authed.post('/scrapbooks', route(async (req, res) => {
+  const me = user(req);
+  const body = req.body ?? {};
+  const title = cleanText(body.title, 120);
+  const media: MediaInput[] = Array.isArray(body.media) ? body.media : [];
+  if (!title) {
+    res.status(400).json({ error: 'A title is required' });
+    return;
+  }
+  if (media.length > 30 || media.some((m) => !isPhotoUrl(m.photo_url))) {
+    res.status(400).json({ error: 'Up to 30 photos, each a data:image or https URL' });
+    return;
+  }
+  if (body.cover_url != null && !isPhotoUrl(body.cover_url)) {
+    res.status(400).json({ error: 'cover_url must be a data:image or https URL' });
+    return;
+  }
+
+  const client = await db().connect();
+  try {
+    await client.query('begin');
+    let id: string | null = null;
+    for (let attempt = 0; attempt < 5 && !id; attempt++) {
+      await client.query('savepoint code');
+      try {
+        const created = await client.query<{ id: string }>(
+          `insert into scrapbooks (owner_id, title, description, city, categories, cover_url, cover_aspect, visibility, access_code)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning id`,
+          [
+            me.id,
+            title,
+            cleanText(body.description, 400),
+            cleanText(body.city, 80) || 'Atlanta',
+            cleanCategories(body.categories),
+            body.cover_url ?? null,
+            body.cover_url ? cleanAspect(body.cover_aspect) : null,
+            body.visibility === 'private' ? 'private' : 'public',
+            newCode(),
+          ]
+        );
+        id = created.rows[0].id;
+      } catch (err) {
+        if ((err as { code?: string }).code !== '23505') throw err;
+        await client.query('rollback to savepoint code');
+      }
+    }
+    if (!id) throw new Error('Could not allocate an access code');
+
+    await client.query(`insert into scrapbook_members (scrapbook_id, user_id) values ($1,$2)`, [id, me.id]);
+    for (const [position, m] of media.entries()) {
+      await client.query(
+        `insert into scrapbook_media (scrapbook_id, author_id, photo_url, aspect, caption, position)
+         values ($1,$2,$3,$4,$5,$6)`,
+        [id, me.id, m.photo_url, cleanAspect(m.aspect), cleanCaption(m.caption), position]
+      );
+    }
+    await client.query('commit');
+    res.status(201).json({ scrapbook: await loadScrapbook(me.id, id) });
+  } catch (err) {
+    await client.query('rollback').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}));
+
+/**
+ * Saves the scrapbook form. `media` is the full ordered list: items with an id
+ * are kept (caption updated if you may), items without one are new photos, and
+ * existing photos left out are removed if they are yours (or you own the book).
+ */
+authed.put('/scrapbooks/:id', route(async (req, res) => {
+  const me = user(req);
+  const id = String(req.params.id);
+  const access = UUID.test(id) ? await membership(me.id, id) : null;
+  if (!access || !access.is_member) {
+    res.status(404).json({ error: 'Scrapbook not found, or you have not joined it' });
+    return;
+  }
+  const isOwner = access.owner_id === me.id;
+  const body = req.body ?? {};
+  const media: MediaInput[] = Array.isArray(body.media) ? body.media : [];
+  if (media.length > 60 || media.some((m) => m.id == null && !isPhotoUrl(m.photo_url))) {
+    res.status(400).json({ error: 'New photos need a data:image or https URL' });
+    return;
+  }
+
+  const client = await db().connect();
+  try {
+    await client.query('begin');
+    if (isOwner) {
+      const title = cleanText(body.title, 120);
+      if (!title) {
+        await client.query('rollback');
+        res.status(400).json({ error: 'A title is required' });
+        return;
+      }
+      const coverChanged = body.cover_url !== undefined;
+      if (coverChanged && body.cover_url !== null && !isPhotoUrl(body.cover_url)) {
+        await client.query('rollback');
+        res.status(400).json({ error: 'cover_url must be a data:image or https URL' });
+        return;
+      }
+      await client.query(
+        `update scrapbooks set title = $2, description = $3, city = $4, categories = $5,
+                visibility = $6, updated_at = now(),
+                cover_url = case when $7 then $8 else cover_url end,
+                cover_aspect = case when $7 then $9 else cover_aspect end
+         where id = $1`,
+        [
+          id,
+          title,
+          cleanText(body.description, 400),
+          cleanText(body.city, 80) || 'Atlanta',
+          cleanCategories(body.categories),
+          body.visibility === 'private' ? 'private' : 'public',
+          coverChanged,
+          body.cover_url ?? null,
+          body.cover_url ? cleanAspect(body.cover_aspect) : null,
+        ]
+      );
+    } else {
+      await client.query(`update scrapbooks set updated_at = now() where id = $1`, [id]);
+    }
+
+    const existing = await client.query<{ id: string; author_id: string }>(
+      `select id, author_id from scrapbook_media where scrapbook_id = $1`,
+      [id]
+    );
+    const mayEdit = (authorId: string) => isOwner || authorId === me.id;
+    const keptIds = new Set(media.filter((m) => typeof m.id === 'string').map((m) => m.id as string));
+    for (const row of existing.rows) {
+      if (!keptIds.has(row.id) && mayEdit(row.author_id)) {
+        await client.query(`delete from scrapbook_media where id = $1`, [row.id]);
+      }
+    }
+    const authorById = new Map(existing.rows.map((row) => [row.id, row.author_id]));
+    for (const [position, m] of media.entries()) {
+      const authorId = typeof m.id === 'string' ? authorById.get(m.id) : undefined;
+      if (authorId !== undefined) {
+        if (mayEdit(authorId)) {
+          await client.query(`update scrapbook_media set caption = $2, position = $3 where id = $1`, [
+            m.id,
+            cleanCaption(m.caption),
+            position,
+          ]);
+        } else {
+          await client.query(`update scrapbook_media set position = $2 where id = $1`, [m.id, position]);
+        }
+      } else if (m.id == null) {
+        await client.query(
+          `insert into scrapbook_media (scrapbook_id, author_id, photo_url, aspect, caption, position)
+           values ($1,$2,$3,$4,$5,$6)`,
+          [id, me.id, m.photo_url, cleanAspect(m.aspect), cleanCaption(m.caption), position]
+        );
+      }
+    }
+    await client.query('commit');
+    res.json({ scrapbook: await loadScrapbook(me.id, id) });
+  } catch (err) {
+    await client.query('rollback').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}));
+
+authed.delete('/scrapbooks/:id', route(async (req, res) => {
+  const me = user(req);
+  const id = String(req.params.id);
+  const rows = UUID.test(id)
+    ? await query<{ id: string }>(`delete from scrapbooks where id = $1 and owner_id = $2 returning id`, [id, me.id])
+    : [];
+  if (rows.length === 0) {
+    res.status(404).json({ error: 'Scrapbook not found, or it is not yours to delete' });
+    return;
+  }
+  res.json({ deleted: rows[0].id });
+}));
+
+/** Join a scrapbook with its access code. Joining twice is harmless. */
+authed.post('/scrapbooks/join', route(async (req, res) => {
+  const me = user(req);
+  const code = typeof req.body?.code === 'string' ? req.body.code.trim().toUpperCase() : '';
+  if (code.length !== 6) {
+    res.status(400).json({ error: 'Access codes are 6 characters' });
+    return;
+  }
+  const found = await query<{ id: string }>(`select id from scrapbooks where access_code = $1`, [code]);
+  if (found.length === 0) {
+    res.status(404).json({ error: 'No scrapbook has that code' });
+    return;
+  }
+  await query(
+    `insert into scrapbook_members (scrapbook_id, user_id) values ($1,$2) on conflict do nothing`,
+    [found[0].id, me.id]
+  );
+  res.json({ scrapbook: await loadScrapbook(me.id, found[0].id) });
+}));
+
 /**
  * "Friends keep coming back": reads the daily_place_visits continuous aggregate
  * and joins friendships OUTSIDE the aggregate. A place scores on return days —

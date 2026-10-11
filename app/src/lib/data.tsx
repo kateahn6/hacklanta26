@@ -2,11 +2,12 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import type { Entry, Place, ReturningPlace } from '@/lib/types';
+import type { ApiScrapbook, Entry, Place, ReturningPlace } from '@/lib/types';
 
 type DataValue = {
   places: Place[];
   returning: ReturningPlace[];
+  scrapbooks: ApiScrapbook[];
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -19,6 +20,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const { session, profile, getAccessToken, signOut } = useAuth();
   const [places, setPlaces] = useState<Place[]>([]);
   const [returning, setReturning] = useState<ReturningPlace[]>([]);
+  const [scrapbooks, setScrapbooks] = useState<ApiScrapbook[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,6 +28,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!session) {
       setPlaces([]);
       setReturning([]);
+      setScrapbooks([]);
       return;
     }
     setLoading(true);
@@ -34,10 +37,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const token = await getAccessToken();
       // Loaded independently: the ranking depends on the continuous aggregate,
       // and a missing aggregate must not blank out the map's pins.
-      const [placesRes, returningRes] = await Promise.allSettled([
+      const [placesRes, returningRes, scrapbooksRes] = await Promise.allSettled([
         api<{ places: Place[] }>('/api/places', { token, profile }),
         api<{ returning: ReturningPlace[] }>('/api/returning', { token, profile }),
+        api<{ scrapbooks: ApiScrapbook[] }>('/api/scrapbooks', { token, profile }),
       ]);
+      // Shared scrapbooks are optional: an API without them must not break the map.
+      setScrapbooks(scrapbooksRes.status === 'fulfilled' ? (scrapbooksRes.value.scrapbooks ?? []) : []);
       if (placesRes.status === 'fulfilled') {
         setPlaces(placesRes.value.places ?? []);
       } else {
@@ -77,8 +83,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<DataValue>(
-    () => ({ places, returning, loading, error, refresh, findEntry }),
-    [error, findEntry, loading, places, refresh, returning]
+    () => ({ places, returning, scrapbooks, loading, error, refresh, findEntry }),
+    [error, findEntry, loading, places, refresh, returning, scrapbooks]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

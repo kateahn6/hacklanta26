@@ -39,7 +39,8 @@
         {
           "photosPermission": "Unfold uses your photos to build scrapbook pages for the places you pin."
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

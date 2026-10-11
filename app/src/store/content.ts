@@ -47,7 +47,7 @@ export function useContent(): Content {
   const deletedIds = useAppStore((s) => s.deletedIds);
 
   return useMemo(() => {
-    const live = api.places.length > 0;
+    const live = api.places.length > 0 || api.scrapbooks.some((s) => s.remote);
     const base = live ? api : seedContent;
     const places = merge(base.places, userPlaces, (p) => p);
     const deleted = new Set(deletedIds);

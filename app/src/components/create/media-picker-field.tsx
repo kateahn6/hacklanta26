@@ -18,10 +18,14 @@ interface MediaPickerFieldProps {
   media: ScrapbookMedia[];
   onChange: (media: ScrapbookMedia[]) => void;
   invalid?: boolean;
+  /** Photos someone else added to a shared scrapbook: shown, but their caption and removal are locked. */
+  isLocked?: (media: ScrapbookMedia) => boolean;
+  /** Label for a locked photo's author, e.g. "Added by Maya". */
+  lockedLabel?: (media: ScrapbookMedia) => string;
 }
 
 /** Adds several photos at once, each with an optional short caption. Cancel or failure keeps what's there. */
-export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldProps) {
+export function MediaPickerField({ media, onChange, invalid, isLocked, lockedLabel }: MediaPickerFieldProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const remaining = MAX_PHOTOS - media.length;
@@ -60,7 +64,19 @@ export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldP
     <View style={styles.wrap}>
       {media.length > 0 ? (
         <View style={styles.list}>
-          {media.map((m, index) => (
+          {media.map((m, index) =>
+            isLocked?.(m) ? (
+              <View key={m.id} style={styles.row}>
+                <PhotoView photo={m.photo} aspect={1} style={styles.thumb} label={`Photo ${index + 1}`} />
+                <View style={styles.lockedText}>
+                  <AppText variant="caption" numberOfLines={2} style={styles.lockedCaption}>
+                    {m.caption ?? 'No caption'}
+                  </AppText>
+                  <AppText variant="caption">{lockedLabel?.(m) ?? 'Added by a friend'}</AppText>
+                </View>
+                <Ionicons name="lock-closed-outline" size={16} color={Colors.textMuted} />
+              </View>
+            ) : (
             <View key={m.id} style={styles.row}>
               <PhotoView photo={m.photo} aspect={1} style={styles.thumb} label={`Photo ${index + 1}`} />
               <TextInput
@@ -82,7 +98,8 @@ export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldP
                 <Ionicons name="close" size={16} color={Colors.textMuted} />
               </PressableScale>
             </View>
-          ))}
+            ),
+          )}
         </View>
       ) : (
         <PressableScale
@@ -136,6 +153,8 @@ const styles = StyleSheet.create({
     color: Colors.slate,
     textAlignVertical: 'center',
   },
+  lockedText: { flex: 1, gap: 2 },
+  lockedCaption: { fontFamily: Fonts.sansItalic, color: Colors.slate },
   remove: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.backgroundDeep },
   empty: {
     alignItems: 'center',

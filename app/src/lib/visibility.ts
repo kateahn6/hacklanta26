@@ -18,7 +18,10 @@ export const isOwn = (item: { authorId: string }) => item.authorId === DEMO_USER
 
 /** What the signed-in user may open: public content plus everything they own. */
 export const canViewPostcard = (postcard: Postcard, now: number) => isPostcardPublic(postcard, now) || isOwn(postcard);
-export const canViewScrapbook = (scrapbook: Scrapbook) => isScrapbookPublic(scrapbook) || isOwn(scrapbook);
+/** Owner or someone who joined with the access code. */
+export const isCollaborator = (scrapbook: Scrapbook) =>
+  isOwn(scrapbook) || (scrapbook.collaboratorIds ?? []).includes(DEMO_USER_ID);
+export const canViewScrapbook = (scrapbook: Scrapbook) => isScrapbookPublic(scrapbook) || isCollaborator(scrapbook);
 
 export function isExpired(postcard: Postcard, now: number): boolean {
   return postcard.expiresAt !== null && Date.parse(postcard.expiresAt) <= now;

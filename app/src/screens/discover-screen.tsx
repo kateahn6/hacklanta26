@@ -1,8 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MasonryFeed } from '@/components/cards/masonry-feed';
@@ -10,17 +9,13 @@ import { ScrapbookTile } from '@/components/feed/scrapbook-tile';
 import { buildMyPosts, MyPostTile } from '@/components/feed/my-post-tile';
 import { SectionHeader } from '@/components/feed/section-header';
 import { AppText } from '@/components/ui/app-text';
-import { Button } from '@/components/ui/button';
 import { CategoryChips } from '@/components/ui/category-chips';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Notice } from '@/components/ui/notice';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
 import { DEMO_USER_ID } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
-import { api } from '@/lib/api';
 import { useApiContent } from '@/lib/api-content';
-import { useAuth } from '@/lib/auth';
 import { buildPublicFeed, filterFeed, type PostcardItem, type ScrapbookItem } from '@/lib/feed';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
@@ -31,11 +26,6 @@ export function DiscoverScreen() {
   const { width } = useWindowDimensions();
   const content = useContent();
   const now = useNow();
-  const { profile, getAccessToken } = useAuth();
-  const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [shareBusy, setShareBusy] = useState<'invite' | null>(null);
-  const [shareError, setShareError] = useState<string | null>(null);
-  const [shareDone, setShareDone] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<CategoryId | null>(null);
 
@@ -53,26 +43,6 @@ export function DiscoverScreen() {
   const scrapbooks = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook');
   const postcards = results.filter((item): item is PostcardItem => item.kind === 'postcard');
 
-  const createInvite = async () => {
-    setShareBusy('invite');
-    setShareError(null);
-    try {
-      const token = await getAccessToken();
-      const res = await api<{ code: string }>('/api/friends/invite', {
-        method: 'POST',
-        token,
-        profile,
-      });
-      setInviteCode(res.code);
-      await Clipboard.setStringAsync(res.code);
-      setShareDone(`Code ${res.code} copied. Send it to a friend.`);
-    } catch (err: any) {
-      setShareError(err?.message ?? 'Could not create an invite code.');
-    } finally {
-      setShareBusy(null);
-    }
-  };
-
   return (
     <ScrollView
       style={styles.screen}
@@ -83,30 +53,6 @@ export function DiscoverScreen() {
         <AppText variant="display">Discover</AppText>
         <SearchBar value={query} onChangeText={setQuery} placeholder="Search scrapbooks, places, people" />
       </View>
-      {!filtering ? (
-        <View style={styles.sharing}>
-          {inviteCode ? <AppText variant="display" style={styles.code}>{inviteCode}</AppText> : null}
-          {shareError ? <Notice icon="warning-outline" tone="navy" message={shareError} /> : null}
-          {shareDone ? <Notice icon="checkmark-circle-outline" message={shareDone} /> : null}
-          <View style={styles.shareRow}>
-            <Button
-              label={inviteCode ? 'Share code' : 'Invite a friend'}
-              icon={inviteCode ? 'share-outline' : 'person-add-outline'}
-              loading={shareBusy === 'invite'}
-              flex
-              onPress={
-                inviteCode
-                  ? () =>
-                      Share.share({
-                        message: `Join my noted! map — open the app and enter code ${inviteCode}`,
-                      })
-                  : createInvite
-              }
-            />
-          </View>
-        </View>
-      ) : null}
-
       {returning.length > 0 && !filtering ? (
         <View style={styles.returning}>
           <SectionHeader title="They keep going back" detail="No likes, no ratings" />
@@ -194,9 +140,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: Gutter, gap: Spacing.md },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
-  sharing: { paddingHorizontal: Gutter, gap: Spacing.sm, marginTop: Spacing.lg },
-  shareRow: { flexDirection: 'row', gap: Spacing.sm },
-  code: { color: Colors.navy, letterSpacing: 8, textAlign: 'center' },
   returning: { paddingHorizontal: Gutter, gap: Spacing.sm, marginTop: Spacing.lg },
   returnRow: {
     flexDirection: 'row',

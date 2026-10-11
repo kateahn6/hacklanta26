@@ -30,7 +30,8 @@ export function buildMyPosts(content: Content, authorId: string): MyPost[] {
       item: p,
     }));
   const scrapbooks: MyPost[] = content.scrapbooks
-    .filter((s) => s.authorId === authorId)
+    // Includes scrapbooks you joined with a code.
+    .filter((s) => s.authorId === authorId || (s.collaboratorIds ?? []).includes(authorId))
     .map((s) => ({
       key: `scrapbook:${s.id}`,
       kind: 'scrapbook',
