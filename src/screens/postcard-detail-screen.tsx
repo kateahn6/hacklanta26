@@ -64,7 +64,7 @@ export function PostcardDetailScreen() {
                 ? 'Draft saved. Only you can see it until you publish.'
                 : postcard.visibility === 'public'
                   ? 'Published! It now appears in Explore, Discover, and on the map.'
-                  : 'Saved privately. Only you can see it, from your profile.'
+                  : 'Saved privately. Only you can see it, under Your posts in Discover.'
             }
           />
         ) : null}

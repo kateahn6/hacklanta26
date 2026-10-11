@@ -20,7 +20,7 @@ import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
-import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus } from '@/types';
+import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus, Visibility } from '@/types';
 
 const NOTE_LIMIT = 200;
 const HOUR = 60 * 60 * 1000;
@@ -34,7 +34,6 @@ export function CreatePostcardScreen() {
   const upsertPlace = useAppStore((s) => s.upsertPlace);
   const upsertPostcard = useAppStore((s) => s.upsertPostcard);
   const addComposerStops = useAppStore((s) => s.addComposerStops);
-  const defaultVisibility = useAppStore((s) => s.defaultVisibility);
 
   const existing = params.id ? content.postcardById.get(params.id) : undefined;
   const editing = existing && isOwn(existing) ? existing : undefined;
@@ -46,7 +45,7 @@ export function CreatePostcardScreen() {
   const [city, setCity] = useState(existingPlace?.city ?? 'Atlanta');
   const [note, setNote] = useState(editing?.note ?? '');
   const [category, setCategory] = useState<CategoryId | null>(existingPlace?.categories[0] ?? null);
-  const [visibility, setVisibility] = useState(editing?.visibility ?? defaultVisibility);
+  const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [expiry, setExpiry] = useState<ExpiryOption>(editing?.expiryOption ?? 'never');
   const [errors, setErrors] = useState<Errors>({});
 

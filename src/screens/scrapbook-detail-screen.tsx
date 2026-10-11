@@ -120,7 +120,7 @@ export function ScrapbookDetailScreen() {
                   ? 'Draft saved. Only you can see it until you publish.'
                   : scrapbook.visibility === 'public'
                     ? 'Published! Your scrapbook now appears in Explore and Discover.'
-                    : 'Saved privately. Only you can see it, from your profile.'
+                    : 'Saved privately. Only you can see it, under Your posts in Discover.'
               }
             />
           ) : null}

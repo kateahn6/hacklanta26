@@ -8,13 +8,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapMarker } from '@/components/map/map-marker';
 import { PlacePreviewCard } from '@/components/map/place-preview-card';
 import { AppText } from '@/components/ui/app-text';
-import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CategoryChips } from '@/components/ui/category-chips';
 import { IconButton } from '@/components/ui/icon-button';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
-import { CITY_REGION, DEMO_USER_ID } from '@/data/content-source';
+import { CITY_REGION } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
 import { buildMapPlaces, filterMapPlaces, type MapPlace } from '@/lib/map-places';
 import { notedMapStyle } from '@/lib/map-style';
@@ -27,7 +26,7 @@ const CARD_GAP = Spacing.sm;
 const PLACE_DELTA = 0.018;
 
 interface MapScreenProps {
-  /** Home tab: profile avatar instead of a back button, and the tab bar below. */
+  /** Home tab: no back button, and the tab bar below. */
   home?: boolean;
 }
 
@@ -48,7 +47,6 @@ export function MapScreen({ home = false }: MapScreenProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
 
-  const me = content.userById.get(DEMO_USER_ID);
   const scrapbook = scrapbookId ? content.scrapbookById.get(scrapbookId) : undefined;
   const allPlaces = buildMapPlaces(
     content,
@@ -117,13 +115,7 @@ export function MapScreen({ home = false }: MapScreenProps) {
       style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}
       pointerEvents="box-none">
       <View style={styles.searchRow} pointerEvents="box-none">
-        {home ? (
-          me ? (
-            <PressableScale accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={4} onPress={() => router.push('/profile')} style={styles.avatar}>
-              <Avatar user={me} size={44} />
-            </PressableScale>
-          ) : null
-        ) : (
+        {home ? null : (
           <IconButton icon="arrow-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
         )}
         <View style={styles.flex}>
@@ -244,7 +236,6 @@ const styles = StyleSheet.create({
   flexShrink: { flexShrink: 1 },
   center: { textAlign: 'center' },
   header: { position: 'absolute', top: 0, left: 0, right: 0, gap: Spacing.sm, zIndex: 5 },
-  avatar: { borderRadius: 22, boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
   scopeRow: { flexDirection: 'row', paddingHorizontal: Gutter },
   scope: {

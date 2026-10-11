@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -5,17 +6,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MasonryFeed } from '@/components/cards/masonry-feed';
 import { CollectionTile } from '@/components/feed/collection-tile';
-import { FeaturedCard } from '@/components/feed/featured-card';
+import { buildMyPosts, MyPostTile } from '@/components/feed/my-post-tile';
 import { SectionHeader } from '@/components/feed/section-header';
 import { AppText } from '@/components/ui/app-text';
 import { CategoryChips } from '@/components/ui/category-chips';
 import { EmptyState } from '@/components/ui/empty-state';
-import { IconButton } from '@/components/ui/icon-button';
+import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
+import { DEMO_USER_ID } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
 import { buildPublicFeed, filterFeed, type PostcardItem, type ScrapbookItem } from '@/lib/feed';
 import { useContent } from '@/store/content';
-import { Colors, Gutter, Spacing } from '@/theme/tokens';
+import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 import type { CategoryId } from '@/types';
 
 export function DiscoverScreen() {
@@ -28,10 +30,9 @@ export function DiscoverScreen() {
 
   const filtering = query.trim().length > 0 || category !== null;
   const results = filterFeed(buildPublicFeed(content, now), category, query);
-  const featured = filtering
-    ? undefined
-    : results.find((item): item is ScrapbookItem => item.kind === 'scrapbook' && item.scrapbook.featured === true);
-  const collections = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook' && item !== featured);
+  const myPosts = buildMyPosts(content, now, DEMO_USER_ID);
+  const tileWidth = Math.min(150, width * 0.38);
+  const collections = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook');
   const postcards = results.filter((item): item is PostcardItem => item.kind === 'postcard');
 
   return (
@@ -41,13 +42,7 @@ export function DiscoverScreen() {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag">
       <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <View style={styles.titleText}>
-            <AppText variant="overline">Public from the community</AppText>
-            <AppText variant="display">Discover</AppText>
-          </View>
-          <IconButton icon="map-outline" label="Open map" onPress={() => router.push('/map')} />
-        </View>
+        <AppText variant="display">Discover</AppText>
         <SearchBar value={query} onChangeText={setQuery} placeholder="Search collections, places, people" />
       </View>
       <View style={styles.chips}>
@@ -67,9 +62,24 @@ export function DiscoverScreen() {
         />
       ) : null}
 
-      {featured ? (
-        <View style={styles.featured}>
-          <FeaturedCard item={featured} />
+      {!filtering ? (
+        <View style={styles.section}>
+          <SectionHeader title="Your posts" detail={myPosts.length > 0 ? `${myPosts.length} posts` : undefined} />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.carousel}>
+            {myPosts.map((post) => (
+              <MyPostTile key={post.key} post={post} width={tileWidth} now={now} />
+            ))}
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel="Create a postcard"
+              onPress={() => router.push('/create/postcard')}
+              style={[styles.newPost, { width: tileWidth, height: tileWidth / 0.95 }]}>
+              <Ionicons name="add" size={26} color={Colors.cherry} />
+              <AppText variant="label" color={Colors.cherry}>
+                {myPosts.length > 0 ? 'New postcard' : 'Share your first place'}
+              </AppText>
+            </PressableScale>
+          </ScrollView>
         </View>
       ) : null}
 
@@ -97,10 +107,17 @@ export function DiscoverScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.cream },
   header: { paddingHorizontal: Gutter, gap: Spacing.md },
-  titleRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
-  titleText: { gap: 2 },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
   section: { marginBottom: Spacing.xxl },
-  featured: { paddingHorizontal: Gutter, marginBottom: Spacing.xxl },
+  newPost: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    padding: Spacing.md,
+    borderRadius: Radius.md,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: Colors.caramel,
+  },
   carousel: { gap: Spacing.md, paddingHorizontal: Gutter },
 });

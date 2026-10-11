@@ -20,13 +20,11 @@ interface AppState {
   userPlaces: Place[];
   userPostcards: Postcard[];
   userScrapbooks: Scrapbook[];
-  defaultVisibility: Visibility;
   composer: ScrapbookComposer | null;
 
   upsertPlace: (place: Place) => void;
   upsertPostcard: (postcard: Postcard) => void;
   upsertScrapbook: (scrapbook: Scrapbook) => void;
-  setDefaultVisibility: (visibility: Visibility) => void;
 
   startComposer: (composer: ScrapbookComposer) => void;
   updateComposer: (patch: Partial<ScrapbookComposer>) => void;
@@ -45,13 +43,11 @@ export const useAppStore = create<AppState>()(
       userPlaces: [],
       userPostcards: [],
       userScrapbooks: [],
-      defaultVisibility: 'public',
       composer: null,
 
       upsertPlace: (place) => set((s) => ({ userPlaces: upsert(s.userPlaces, place) })),
       upsertPostcard: (postcard) => set((s) => ({ userPostcards: upsert(s.userPostcards, postcard) })),
       upsertScrapbook: (scrapbook) => set((s) => ({ userScrapbooks: upsert(s.userScrapbooks, scrapbook) })),
-      setDefaultVisibility: (defaultVisibility) => set({ defaultVisibility }),
 
       startComposer: (composer) => set({ composer }),
       updateComposer: (patch) => set((s) => (s.composer ? { composer: { ...s.composer, ...patch } } : {})),
@@ -78,11 +74,10 @@ export const useAppStore = create<AppState>()(
     {
       name: 'noted.app-state.v1',
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ userPlaces, userPostcards, userScrapbooks, defaultVisibility }) => ({
+      partialize: ({ userPlaces, userPostcards, userScrapbooks }) => ({
         userPlaces,
         userPostcards,
         userScrapbooks,
-        defaultVisibility,
       }),
     },
   ),

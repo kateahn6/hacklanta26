@@ -34,7 +34,6 @@ export function CreateScrapbookScreen() {
   const moveStop = useAppStore((s) => s.moveComposerStop);
   const clearComposer = useAppStore((s) => s.clearComposer);
   const upsertScrapbook = useAppStore((s) => s.upsertScrapbook);
-  const defaultVisibility = useAppStore((s) => s.defaultVisibility);
   const [errors, setErrors] = useState<Errors>({});
 
   const existing = params.id ? content.scrapbookById.get(params.id) : undefined;
@@ -48,7 +47,7 @@ export function CreateScrapbookScreen() {
       description: editing?.description ?? '',
       city: editing?.city ?? 'Atlanta',
       cover: editing?.cover ?? null,
-      visibility: editing?.visibility ?? defaultVisibility,
+      visibility: editing?.visibility ?? 'public',
       stops: editing?.stops ?? [],
     });
     // Only on open; later edits flow through the composer.

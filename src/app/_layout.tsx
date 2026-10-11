@@ -32,7 +32,6 @@ export default function RootLayout() {
         <Stack.Screen name="map" />
         <Stack.Screen name="postcard/[id]" />
         <Stack.Screen name="scrapbook/[id]" />
-        <Stack.Screen name="profile" />
         <Stack.Screen name="create/postcard" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="create/scrapbook" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="create/pick-postcards" options={{ animation: 'slide_from_bottom' }} />
