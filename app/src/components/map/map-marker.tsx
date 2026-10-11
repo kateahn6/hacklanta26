@@ -22,7 +22,7 @@ export function MapMarker({ mapPlace, selected, tilt }: MapMarkerProps) {
         {photo ? (
           <Image source={photo.source} style={{ width: size, height: size, borderRadius: 3 }} />
         ) : (
-          <View style={{ width: size, height: size, backgroundColor: Colors.creamDeep }} />
+          <View style={{ width: size, height: size, backgroundColor: Colors.backgroundDeep }} />
         )}
         {count > 1 ? (
           <View style={styles.count}>
@@ -47,11 +47,11 @@ const styles = StyleSheet.create({
   frame: {
     padding: 3,
     borderRadius: 6,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: 'rgba(33, 31, 28, 0.15)',
+    borderColor: Colors.hairline,
   },
-  frameSelected: { backgroundColor: Colors.cherry, borderColor: Colors.cherry, padding: 4 },
+  frameSelected: { backgroundColor: Colors.navy, borderColor: Colors.navy, padding: 4 },
   pointer: {
     width: 0,
     height: 0,
@@ -60,10 +60,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 7,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: Colors.paper,
+    borderTopColor: Colors.surface,
     marginTop: -1,
   },
-  pointerSelected: { borderTopColor: Colors.cherry },
+  pointerSelected: { borderTopColor: Colors.navy },
   count: {
     position: 'absolute',
     top: -7,
@@ -72,20 +72,20 @@ const styles = StyleSheet.create({
     height: 20,
     paddingHorizontal: 5,
     borderRadius: 10,
-    backgroundColor: Colors.olive,
+    backgroundColor: Colors.slate,
     borderWidth: 2,
-    borderColor: Colors.paper,
+    borderColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countText: { fontFamily: Fonts.sansBold, fontSize: 10.5, color: Colors.cream },
+  countText: { fontFamily: Fonts.sansBold, fontSize: 10.5, color: Colors.white },
   label: {
     marginTop: 3,
     maxWidth: 160,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
-    backgroundColor: Colors.softBlack,
+    backgroundColor: Colors.text,
   },
-  labelText: { fontFamily: Fonts.sansSemiBold, fontSize: 11.5, color: Colors.cream },
+  labelText: { fontFamily: Fonts.sansSemiBold, fontSize: 11.5, color: Colors.white },
 });

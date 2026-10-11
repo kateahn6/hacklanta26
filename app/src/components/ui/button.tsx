@@ -19,7 +19,7 @@ interface ButtonProps {
 
 export function Button({ label, onPress, variant = 'primary', icon, disabled, loading, flex }: ButtonProps) {
   const primary = variant === 'primary';
-  const color = primary ? Colors.cream : Colors.cherry;
+  const color = primary ? Colors.white : Colors.navy;
 
   return (
     <PressableScale
@@ -57,8 +57,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.sm,
   },
-  primary: { backgroundColor: Colors.cherry },
-  secondary: { borderWidth: 1.5, borderColor: Colors.cherry },
+  primary: { backgroundColor: Colors.navy },
+  secondary: { borderWidth: 1.5, borderColor: Colors.navy },
   flex: { flex: 1 },
   disabled: { opacity: 0.45 },
   label: { fontFamily: Fonts.sansSemiBold, fontSize: 15 },

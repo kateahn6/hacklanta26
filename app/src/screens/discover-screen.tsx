@@ -109,7 +109,7 @@ export function DiscoverScreen() {
         <View style={styles.sharing}>
           <SectionHeader title="Your friends&rsquo; map" detail="Swap a code to merge maps" />
           {inviteCode ? <AppText variant="display" style={styles.code}>{inviteCode}</AppText> : null}
-          {shareError ? <Notice icon="warning-outline" tone="cherry" message={shareError} /> : null}
+          {shareError ? <Notice icon="warning-outline" tone="navy" message={shareError} /> : null}
           {shareDone ? <Notice icon="checkmark-circle-outline" message={shareDone} /> : null}
           <View style={styles.shareRow}>
             <Button
@@ -148,7 +148,7 @@ export function DiscoverScreen() {
               accessibilityLabel={`${place.name}, ${place.return_days} return days`}
               onPress={() => router.push('/map')}
               style={styles.returnRow}>
-              <AppText variant="heading" color={Colors.olive} style={styles.rank}>
+              <AppText variant="heading" color={Colors.slate} style={styles.rank}>
                 {i + 1}
               </AppText>
               <View style={styles.returnCopy}>
@@ -160,7 +160,7 @@ export function DiscoverScreen() {
                   {place.who.join(', ')}
                 </AppText>
               </View>
-              <Ionicons name="repeat" size={18} color={Colors.olive} />
+              <Ionicons name="repeat" size={18} color={Colors.slate} />
             </PressableScale>
           ))}
         </View>
@@ -222,12 +222,12 @@ export function DiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: Gutter, gap: Spacing.md },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
   sharing: { paddingHorizontal: Gutter, gap: Spacing.sm, marginTop: Spacing.lg },
   shareRow: { flexDirection: 'row', gap: Spacing.sm },
-  code: { color: Colors.cherry, letterSpacing: 8, textAlign: 'center' },
+  code: { color: Colors.navy, letterSpacing: 8, textAlign: 'center' },
   returning: { paddingHorizontal: Gutter, gap: Spacing.sm, marginTop: Spacing.lg },
   returnRow: {
     flexDirection: 'row',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.md,
     borderRadius: Radius.md,
-    backgroundColor: Colors.sageSoft,
+    backgroundColor: Colors.skySoft,
   },
   rank: { width: 22, textAlign: 'center' },
   returnCopy: { flex: 1 },

@@ -64,16 +64,16 @@ export function PhotoPickerField({ photo, onChange, invalid, emptyLabel = 'Add a
           disabled={busy}
           style={[styles.empty, invalid && styles.invalid]}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="image-outline" size={26} color={Colors.cherry} />
+            <Ionicons name="image-outline" size={26} color={Colors.navy} />
           </View>
-          <AppText variant="label" color={Colors.cherry}>
+          <AppText variant="label" color={Colors.navy}>
             {busy ? 'Opening photos…' : emptyLabel}
           </AppText>
           <AppText variant="caption">Choose from your photo library</AppText>
         </PressableScale>
       )}
       {message ? (
-        <AppText variant="caption" color={Colors.chocolate} accessibilityRole="alert">
+        <AppText variant="caption" color={Colors.slate} accessibilityRole="alert">
           {message}
         </AppText>
       ) : null}
@@ -84,7 +84,7 @@ export function PhotoPickerField({ photo, onChange, invalid, emptyLabel = 'Add a
 const styles = StyleSheet.create({
   wrap: { gap: Spacing.sm },
   previewWrap: { gap: Spacing.md },
-  mat: { padding: 6, paddingBottom: 16, backgroundColor: Colors.paper, borderRadius: Radius.sm, boxShadow: '0 3px 12px rgba(33, 31, 28, 0.12)' },
+  mat: { padding: 6, paddingBottom: 16, backgroundColor: Colors.surface, borderRadius: Radius.sm, boxShadow: '0 3px 12px rgba(22, 44, 94, 0.12)' },
   preview: { width: '100%', borderRadius: 3 },
   previewActions: { flexDirection: 'row', gap: Spacing.sm },
   empty: {
@@ -94,9 +94,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: Colors.caramel,
-    backgroundColor: Colors.paper,
+    borderColor: Colors.sky,
+    backgroundColor: Colors.surface,
   },
   invalid: { borderColor: Colors.danger },
-  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.cherrySoft, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xs },
+  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.navySoft, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xs },
 });

@@ -25,8 +25,8 @@ export function VisibilitySelector({ value, onChange }: { value: Visibility; onC
             accessibilityLabel={`${option.title}. ${option.detail}`}
             onPress={() => onChange(option.value)}
             style={[styles.option, active && styles.active]}>
-            <Ionicons name={option.icon} size={18} color={active ? Colors.cherry : Colors.muted} />
-            <AppText variant="label" color={active ? Colors.cherry : Colors.softBlack}>
+            <Ionicons name={option.icon} size={18} color={active ? Colors.navy : Colors.textMuted} />
+            <AppText variant="label" color={active ? Colors.navy : Colors.text}>
               {option.title}
             </AppText>
             <AppText variant="caption">{option.detail}</AppText>
@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
     gap: 4,
     padding: Spacing.md,
     borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
-  active: { borderColor: Colors.cherry, backgroundColor: Colors.cherrySoft },
+  active: { borderColor: Colors.navy, backgroundColor: Colors.navySoft },
 });

@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     paddingHorizontal: Gutter,
     paddingTop: Spacing.md,
-    backgroundColor: Colors.cream,
+    backgroundColor: Colors.background,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.hairline,
   },

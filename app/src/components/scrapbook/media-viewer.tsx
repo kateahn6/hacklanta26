@@ -29,20 +29,20 @@ export function MediaViewer({ media, index, content, onChangeIndex }: MediaViewe
       {current && index !== null ? (
         <View style={[styles.screen, { paddingTop: insets.top + Spacing.sm, paddingBottom: insets.bottom + Spacing.lg }]}>
           <View style={styles.top}>
-            <AppText variant="caption" color={Colors.sage}>
+            <AppText variant="caption" color={Colors.gray}>
               {index + 1} of {media.length}
             </AppText>
-            <IconButton icon="close" label="Close photo" onPress={close} variant="paper" />
+            <IconButton icon="close" label="Close photo" onPress={close} variant="surface" />
           </View>
           <Image source={current.photo.source} style={styles.image} contentFit="contain" accessibilityLabel={current.caption ?? 'Scrapbook photo'} />
           <View style={styles.bottom}>
             {current.caption ? (
-              <AppText variant="note" color={Colors.cream} style={styles.center}>
+              <AppText variant="note" color={Colors.white} style={styles.center}>
                 {current.caption}
               </AppText>
             ) : null}
             {place ? (
-              <AppText variant="caption" color={Colors.sage} style={styles.center}>
+              <AppText variant="caption" color={Colors.gray} style={styles.center}>
                 {place.name} · {place.neighborhood}
               </AppText>
             ) : null}
@@ -50,7 +50,7 @@ export function MediaViewer({ media, index, content, onChangeIndex }: MediaViewe
               <IconButton
                 icon="chevron-back"
                 label="Previous photo"
-                variant="paper"
+                variant="surface"
                 onPress={() => onChangeIndex((index - 1 + media.length) % media.length)}
               />
               {place?.coordinate ? (
@@ -68,7 +68,7 @@ export function MediaViewer({ media, index, content, onChangeIndex }: MediaViewe
               <IconButton
                 icon="chevron-forward"
                 label="Next photo"
-                variant="paper"
+                variant="surface"
                 onPress={() => onChangeIndex((index + 1) % media.length)}
               />
             </View>
@@ -80,7 +80,7 @@ export function MediaViewer({ media, index, content, onChangeIndex }: MediaViewe
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.softBlack, gap: Spacing.md },
+  screen: { flex: 1, backgroundColor: Colors.text, gap: Spacing.md },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Gutter },
   image: { flex: 1, width: '100%' },
   bottom: { gap: Spacing.sm, paddingHorizontal: Gutter },

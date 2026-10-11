@@ -25,7 +25,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, f
             accessibilityLabel={option.label}
             onPress={() => onChange(option.value)}
             style={[styles.segment, active && styles.active]}>
-            <AppText style={[styles.label, { color: active ? Colors.cream : Colors.softBlack }]}>{option.label}</AppText>
+            <AppText style={[styles.label, { color: active ? Colors.white : Colors.text }]}>{option.label}</AppText>
           </PressableScale>
         );
       })}
@@ -34,9 +34,9 @@ export function SegmentedControl<T extends string>({ options, value, onChange, f
 }
 
 const styles = StyleSheet.create({
-  track: { flexDirection: 'row', padding: 3, borderRadius: Radius.pill, backgroundColor: Colors.creamDeep },
-  floating: { backgroundColor: Colors.paper, boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
+  track: { flexDirection: 'row', padding: 3, borderRadius: Radius.pill, backgroundColor: Colors.backgroundDeep },
+  floating: { backgroundColor: Colors.surface, boxShadow: '0 2px 10px rgba(22, 44, 94, 0.14)' },
   segment: { flex: 1, minHeight: 36, paddingHorizontal: 14, borderRadius: Radius.pill, alignItems: 'center', justifyContent: 'center' },
-  active: { backgroundColor: Colors.cherry },
+  active: { backgroundColor: Colors.navy },
   label: { fontFamily: Fonts.sansSemiBold, fontSize: 13.5 },
 });

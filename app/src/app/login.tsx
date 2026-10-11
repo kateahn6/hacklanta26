@@ -47,7 +47,7 @@ export default function LoginScreen() {
         <AppText variant="display" style={styles.headline}>
           Real places, real people.
         </AppText>
-        <AppText variant="body" color={Colors.chocolate} style={styles.copy}>
+        <AppText variant="body" color={Colors.textMuted} style={styles.copy}>
           The places your friends keep going back to — in their own words, with their own photos.
           No stars, no scores.
         </AppText>
@@ -56,7 +56,7 @@ export default function LoginScreen() {
           <View style={styles.stack}>
             <Notice
               icon="alert-circle-outline"
-              tone="cherry"
+              tone="navy"
               message={`Not configured: ${MISSING.join(
                 ', '
               )}. Copy app/.env.example to app/.env, fill it in, then restart with: npx expo start -c`}
@@ -66,7 +66,7 @@ export default function LoginScreen() {
 
         {error ? (
           <View style={styles.stack}>
-            <Notice icon="warning-outline" tone="cherry" message={error} />
+            <Notice icon="warning-outline" tone="navy" message={error} />
           </View>
         ) : null}
 
@@ -107,10 +107,10 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.cream },
+  safe: { flex: 1, backgroundColor: Colors.background },
   page: { paddingHorizontal: Gutter, paddingVertical: Spacing.xxl, flexGrow: 1, justifyContent: 'center' },
-  wordmark: { fontFamily: Fonts.serif, fontSize: 44, lineHeight: 50, color: Colors.cherry },
-  bang: { fontFamily: Fonts.serif, fontSize: 44, color: Colors.olive },
+  wordmark: { fontFamily: Fonts.script, fontSize: 44, lineHeight: 50, color: Colors.navy },
+  bang: { fontFamily: Fonts.script, fontSize: 44, color: Colors.slate },
   headline: { marginTop: Spacing.sm },
   copy: { marginTop: Spacing.md },
   stack: { marginTop: Spacing.lg },
@@ -119,13 +119,13 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.md,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.sageSoft,
+    backgroundColor: Colors.skySoft,
   },
   mono: {
     fontFamily: 'Courier',
     fontSize: 12,
-    color: Colors.softBlack,
-    backgroundColor: Colors.paper,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.sm,
     padding: Spacing.md,
   },

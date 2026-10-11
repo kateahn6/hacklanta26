@@ -15,7 +15,7 @@ SplashScreen.preventAutoHideAsync();
 // Noted! uses one warm light palette in every system appearance.
 const theme = {
   ...DefaultTheme,
-  colors: { ...DefaultTheme.colors, background: Colors.cream, card: Colors.paper, primary: Colors.cherry, text: Colors.softBlack },
+  colors: { ...DefaultTheme.colors, background: Colors.background, card: Colors.surface, primary: Colors.navy, text: Colors.text },
 };
 
 /**
@@ -57,7 +57,7 @@ export default function RootLayout() {
       <DataProvider>
         <ThemeProvider value={theme}>
           <AuthGate>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.cream } }}>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.background } }}>
             <Stack.Screen name="login" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="map" />

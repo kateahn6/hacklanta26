@@ -1,30 +1,38 @@
 export const Colors = {
-  cream: '#F1E8D8',
-  creamDeep: '#E8DCC6',
-  paper: '#FBF7EF',
-  softBlack: '#211F1C',
-  cherry: '#4A1018',
-  cherrySoft: '#F0DCDA',
-  blackOlive: '#292E1E',
-  olive: '#59633A',
-  sage: '#C8CDB7',
-  sageSoft: '#E1E4D6',
-  caramel: '#D4B38B',
-  chocolate: '#4A3027',
-  muted: '#6E665C',
-  hairline: 'rgba(33, 31, 28, 0.12)',
-  overlay: 'rgba(33, 31, 28, 0.45)',
+  // Brand palette
+  black: '#000000',
+  navy: '#162C5E',
+  slate: '#4B5F8C',
+  sky: '#4F94D7',
+  gray: '#A5A5A5',
+
+  // Surfaces (faint tints of the brand blues)
+  background: '#F3F6FB',
+  backgroundDeep: '#E4EAF3',
+  surface: '#FFFFFF',
+  navySoft: '#E3E8F3',
+  skySoft: '#E4EFFA',
+
+  // Text. Brand gray is too light for readable text on white, so secondary text uses a darker slate-gray.
+  text: '#000000',
+  textMuted: '#5D6574',
+
+  hairline: 'rgba(22, 44, 94, 0.12)',
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  /** Dark translucent fill for labels sitting on photos. */
+  scrim: 'rgba(22, 44, 94, 0.82)',
   white: '#FFFFFF',
-  danger: '#9B2C2C',
+  danger: '#B42318',
 } as const;
 
 export const Fonts = {
-  serif: 'DMSerifDisplay_400Regular',
-  serifItalic: 'DMSerifDisplay_400Regular_Italic',
-  sans: 'DMSans_400Regular',
-  sansMedium: 'DMSans_500Medium',
-  sansSemiBold: 'DMSans_600SemiBold',
-  sansBold: 'DMSans_700Bold',
+  sans: 'Inter_400Regular',
+  sansItalic: 'Inter_400Regular_Italic',
+  sansMedium: 'Inter_500Medium',
+  sansSemiBold: 'Inter_600SemiBold',
+  sansBold: 'Inter_700Bold',
+  /** Handwriting, used only for the message on the back of a postcard. */
+  script: 'OoohBaby_400Regular',
 } as const;
 
 export const Spacing = {

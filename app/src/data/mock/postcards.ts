@@ -18,7 +18,6 @@ export const postcards: Postcard[] = [
     photo: Photos.marketHall,
     note: 'Came for the food hall, stayed for the rooftop. Go up right before sunset.',
     visitedOn: '2026-09-27',
-    cost: '$$',
     tip: 'The rooftop games are worth the ticket once.',
     createdAt: '2026-09-28T18:00:00Z',
   }),
@@ -29,7 +28,6 @@ export const postcards: Postcard[] = [
     photo: Photos.lattePlants,
     note: 'Best seat is by the window upstairs. Quiet even on a Saturday.',
     visitedOn: '2026-10-04',
-    cost: '$',
     createdAt: '2026-10-04T15:00:00Z',
   }),
   published({
@@ -39,7 +37,6 @@ export const postcards: Postcard[] = [
     photo: Photos.streetMural,
     note: 'The walls change every week. Bring a friend, take a terrible photo, come back next month.',
     visitedOn: '2026-09-20',
-    cost: 'Free',
     tip: 'Weekday mornings are the only time it is empty.',
     createdAt: '2026-09-21T10:00:00Z',
   }),
@@ -50,7 +47,6 @@ export const postcards: Postcard[] = [
     photo: Photos.boutique,
     note: 'Walked in for coffee and somehow spent two hours exploring the shops nearby.',
     visitedOn: '2026-10-05',
-    cost: '$',
     createdAt: '2026-10-06T16:00:00Z',
   }),
   published({
@@ -60,7 +56,6 @@ export const postcards: Postcard[] = [
     photo: Photos.stageGlow,
     note: 'Small enough that every seat feels like the front row.',
     visitedOn: '2026-09-12',
-    cost: '$$',
     tip: 'Doors open early. Grab a slice on Euclid first.',
     createdAt: '2026-09-13T02:00:00Z',
   }),
@@ -71,7 +66,6 @@ export const postcards: Postcard[] = [
     photo: Photos.greenValley,
     note: "Brought a blanket and a book. Didn't open the book.",
     visitedOn: '2026-10-02',
-    cost: 'Free',
     createdAt: '2026-10-02T21:00:00Z',
   }),
   published({
@@ -81,7 +75,6 @@ export const postcards: Postcard[] = [
     photo: Photos.cherryBlossom,
     note: 'Bloom week is pure magic. Go on a weekday morning before the crowds.',
     visitedOn: '2026-03-24',
-    cost: '$$',
     createdAt: '2026-08-30T14:00:00Z',
   }),
   published({
@@ -91,7 +84,6 @@ export const postcards: Postcard[] = [
     photo: Photos.sculptureHall,
     note: 'Came for one exhibit, stayed for the light in the atrium.',
     visitedOn: '2026-09-07',
-    cost: '$$',
     tip: 'Second Sundays are free and busy, so arrive at opening.',
     createdAt: '2026-09-08T12:00:00Z',
   }),
@@ -102,7 +94,6 @@ export const postcards: Postcard[] = [
     photo: Photos.espressoFlatlay,
     note: 'Cortado and a concha make a perfect Tuesday. They remember your order by week two.',
     visitedOn: '2026-10-07',
-    cost: '$',
     createdAt: '2026-10-07T09:00:00Z',
   }),
   published({
@@ -112,7 +103,6 @@ export const postcards: Postcard[] = [
     photo: Photos.sharedPlates,
     note: 'Counter-hop for lunch. Try three things and share everything.',
     visitedOn: '2026-09-30',
-    cost: '$',
     createdAt: '2026-09-30T17:00:00Z',
   }),
   published({
@@ -122,7 +112,6 @@ export const postcards: Postcard[] = [
     photo: Photos.whiteGallery,
     note: 'Free admission and always something weird and wonderful on the walls.',
     visitedOn: '2026-09-18',
-    cost: 'Free',
     tip: 'Check the studio artist open days.',
     createdAt: '2026-09-19T15:00:00Z',
   }),
@@ -133,7 +122,6 @@ export const postcards: Postcard[] = [
     photo: Photos.skyline,
     note: "That skyline shot everyone posts? It's even better at blue hour.",
     visitedOn: '2026-09-25',
-    cost: 'Free',
     createdAt: '2026-09-26T00:30:00Z',
   }),
   published({
@@ -143,7 +131,6 @@ export const postcards: Postcard[] = [
     photo: Photos.eventHall,
     note: 'Look up during intermission. The ceiling is half the show.',
     visitedOn: '2026-08-16',
-    cost: '$$$',
     createdAt: '2026-08-17T04:00:00Z',
   }),
   published({
@@ -153,7 +140,6 @@ export const postcards: Postcard[] = [
     photo: Photos.smallPlates,
     note: 'Grab plates from three stalls and argue over the last bite.',
     visitedOn: '2026-10-03',
-    cost: '$$',
     createdAt: '2026-10-03T19:00:00Z',
   }),
   published({
@@ -163,7 +149,6 @@ export const postcards: Postcard[] = [
     photo: Photos.bigTree,
     note: 'Rent a bike at Ponce and ride south until the murals run out.',
     visitedOn: '2026-09-14',
-    cost: 'Free',
     createdAt: '2026-09-15T13:00:00Z',
   }),
   published({
@@ -173,7 +158,6 @@ export const postcards: Postcard[] = [
     photo: Photos.forestPath,
     note: 'Strangely peaceful. The volunteers who run the garden tours adore this place.',
     visitedOn: '2026-09-09',
-    cost: 'Free',
     createdAt: '2026-09-10T16:00:00Z',
   }),
   published({
@@ -183,7 +167,6 @@ export const postcards: Postcard[] = [
     photo: Photos.bookshelves,
     note: 'Lost an hour in the crates and left with a record I had never heard of. No regrets.',
     visitedOn: '2026-10-01',
-    cost: '$',
     createdAt: '2026-10-01T20:00:00Z',
   }),
 
@@ -194,7 +177,6 @@ export const postcards: Postcard[] = [
     authorId: 'u-sam',
     photo: Photos.pizza,
     note: 'Pop-up pizza night this weekend only. Get there early!',
-    cost: '$',
     createdAt: fromNow(-9 * 24 * HOUR),
     expiresAt: fromNow(-2 * 24 * HOUR),
   }),
@@ -206,7 +188,6 @@ export const postcards: Postcard[] = [
     authorId: DEMO_USER_ID,
     photo: Photos.openSign,
     note: 'Sidewalk sale until tomorrow. The vintage racks are 30% off.',
-    cost: '$',
     createdAt: fromNow(-4 * HOUR),
     expiresAt: fromNow(20 * HOUR),
   }),

@@ -38,7 +38,6 @@ export interface Postcard {
   photo: Photo | null;
   note: string;
   visitedOn?: string;
-  cost?: string;
   tip?: string;
   visibility: Visibility;
   status: PublishStatus;

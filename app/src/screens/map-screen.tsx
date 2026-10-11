@@ -130,11 +130,11 @@ export function MapScreen({ home = false }: MapScreenProps) {
             accessibilityLabel={`Showing places from ${scrapbook.title}. Show all places`}
             onPress={() => setScrapbookId(undefined)}
             style={styles.scope}>
-            <Ionicons name="albums-outline" size={14} color={Colors.cream} />
-            <AppText variant="caption" color={Colors.cream} numberOfLines={1} style={styles.flexShrink}>
+            <Ionicons name="albums-outline" size={14} color={Colors.white} />
+            <AppText variant="caption" color={Colors.white} numberOfLines={1} style={styles.flexShrink}>
               {scrapbook.title}
             </AppText>
-            <Ionicons name="close" size={14} color={Colors.cream} />
+            <Ionicons name="close" size={14} color={Colors.white} />
           </PressableScale>
         </View>
       ) : null}
@@ -183,7 +183,7 @@ export function MapScreen({ home = false }: MapScreenProps) {
       {mapFailed && !mapReady ? (
         <View style={styles.errorWrap} pointerEvents="box-none">
           <View style={styles.errorCard}>
-            <Ionicons name="cloud-offline-outline" size={26} color={Colors.cherry} />
+            <Ionicons name="cloud-offline-outline" size={26} color={Colors.navy} />
             <AppText variant="subheading">The map didn’t load</AppText>
             <AppText variant="caption" style={styles.center}>
               Map tiles couldn’t be reached. Check your connection, or browse the same places in Discover.
@@ -232,7 +232,7 @@ export function MapScreen({ home = false }: MapScreenProps) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   flexShrink: { flexShrink: 1 },
   center: { textAlign: 'center' },
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     minHeight: 36,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.pill,
-    backgroundColor: Colors.blackOlive,
+    backgroundColor: Colors.navy,
   },
   chips: { marginHorizontal: 0 },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: Spacing.sm },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingLeft: Spacing.lg,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
   },
   errorWrap: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center', padding: Gutter },
   errorCard: {
@@ -268,8 +268,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     padding: Spacing.xl,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.paper,
-    boxShadow: '0 4px 16px rgba(33, 31, 28, 0.16)',
+    backgroundColor: Colors.surface,
+    boxShadow: '0 4px 16px rgba(22, 44, 94, 0.16)',
   },
   errorActions: { flexDirection: 'row', gap: Spacing.sm, alignSelf: 'stretch', marginTop: Spacing.sm },
 });

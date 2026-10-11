@@ -9,7 +9,7 @@ import type { IconName } from './icon-button';
 export function InfoTile({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
     <View style={styles.tile}>
-      <Ionicons name={icon} size={16} color={Colors.olive} />
+      <Ionicons name={icon} size={16} color={Colors.slate} />
       <AppText variant="caption">{label}</AppText>
       <AppText variant="label">{value}</AppText>
     </View>
@@ -17,5 +17,5 @@ export function InfoTile({ icon, label, value }: { icon: IconName; label: string
 }
 
 const styles = StyleSheet.create({
-  tile: { flex: 1, minWidth: 96, gap: 2, padding: Spacing.md, borderRadius: Radius.md, backgroundColor: Colors.sageSoft },
+  tile: { flex: 1, minWidth: 96, gap: 2, padding: Spacing.md, borderRadius: Radius.md, backgroundColor: Colors.skySoft },
 });

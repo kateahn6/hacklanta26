@@ -4,8 +4,10 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 're
 
 import { FormField, TextBox } from '@/components/create/form-field';
 import { FormFooter } from '@/components/create/form-footer';
+import { PreviewModal } from '@/components/create/preview-modal';
 import { MediaPickerField } from '@/components/create/media-picker-field';
 import { PhotoPickerField } from '@/components/create/photo-picker-field';
+import { ScrapbookView } from '@/components/scrapbook/scrapbook-view';
 import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
 import { TopBar } from '@/components/ui/top-bar';
@@ -39,15 +41,26 @@ export function CreateScrapbookScreen() {
   const [media, setMedia] = useState<ScrapbookMedia[]>(editing?.media ?? []);
   const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [errors, setErrors] = useState<Errors>({});
+  const [previewing, setPreviewing] = useState(false);
+  const author = content.userById.get(DEMO_USER_ID);
 
-  const save = (status: PublishStatus) => {
+  const validate = (status: PublishStatus): boolean => {
     const found: Errors = {};
     if (!title.trim()) found.title = 'Give your scrapbook a title.';
     if (status === 'published' && media.length < MIN_PHOTOS_TO_PUBLISH) {
       found.media = `Add at least ${MIN_PHOTOS_TO_PUBLISH} photos to publish.`;
     }
     setErrors(found);
-    if (Object.keys(found).length > 0) return;
+    return Object.keys(found).length === 0;
+  };
+
+  const openPreview = () => {
+    if (validate('published')) setPreviewing(true);
+  };
+
+  const save = (status: PublishStatus) => {
+    if (!validate(status)) return;
+    setPreviewing(false);
 
     const scrapbook: Scrapbook = {
       id: editing?.id ?? newId('sb'),
@@ -110,7 +123,7 @@ export function CreateScrapbookScreen() {
           </View>
         </FormField>
 
-        <FormField label={`Photos (${media.length})`} error={errors.media} hint="Shown as a collage in the order you add them.">
+        <FormField label={`Photos (${media.length})`} error={errors.media} hint="Shown in a photo grid in the order you add them. Captions appear under each photo.">
           <MediaPickerField media={media} onChange={setMedia} invalid={Boolean(errors.media)} />
         </FormField>
 
@@ -123,20 +136,37 @@ export function CreateScrapbookScreen() {
         </FormField>
 
         {Object.keys(errors).length > 0 ? (
-          <Notice icon="alert-circle-outline" tone="cherry" message="A few things need attention." />
+          <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention." />
         ) : null}
       </ScrollView>
-      <FormFooter
-        onSaveDraft={() => save('draft')}
-        onPublish={() => save('published')}
-        publishLabel={editing?.status === 'published' ? 'Update' : 'Publish'}
-      />
+      <FormFooter onSaveDraft={() => save('draft')} onPublish={openPreview} publishLabel="Preview" />
+
+      {author ? (
+        <PreviewModal
+          visible={previewing}
+          visibility={visibility}
+          postLabel={editing?.status === 'published' ? 'Update' : 'Post'}
+          onEdit={() => setPreviewing(false)}
+          onPost={() => save('published')}
+          fullBleed>
+          <ScrapbookView
+            title={title.trim()}
+            description={description.trim()}
+            city={city.trim() || 'Atlanta'}
+            categories={category ? [category] : []}
+            cover={cover ?? media[0]?.photo ?? null}
+            media={media}
+            author={author}
+            isOwn
+          />
+        </PreviewModal>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
 });

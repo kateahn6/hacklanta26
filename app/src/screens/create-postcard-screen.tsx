@@ -5,7 +5,9 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 're
 
 import { FormField, TextBox } from '@/components/create/form-field';
 import { FormFooter } from '@/components/create/form-footer';
+import { PreviewModal } from '@/components/create/preview-modal';
 import { PhotoPickerField } from '@/components/create/photo-picker-field';
+import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
@@ -26,7 +28,7 @@ import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
-import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus, Visibility } from '@/types';
+import type { CategoryId, ExpiryOption, Photo, Place, Postcard, PublishStatus, Visibility } from '@/types';
 
 const NOTE_LIMIT = 200;
 /** Used when a new place has no picked coordinate: the demo city's centre. */
@@ -67,6 +69,8 @@ export function CreatePostcardScreen() {
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const author = content.userById.get(DEMO_USER_ID);
 
   const linkedPlace = linkedPlaceId ? content.placeById.get(linkedPlaceId) : undefined;
   const q = placeName.trim().toLowerCase();
@@ -138,10 +142,27 @@ export function CreatePostcardScreen() {
     return next;
   };
 
+  const openPreview = () => {
+    const found = validate('published');
+    setErrors(found);
+    if (Object.keys(found).length === 0) setPreviewing(true);
+  };
+
+  // What the place will look like once saved, for the preview.
+  const previewPlace: Place = linkedPlace ?? {
+    id: 'preview',
+    name: placeName.trim(),
+    neighborhood: '',
+    city: city.trim(),
+    categories: category ? [category] : [],
+    coordinate: null,
+  };
+
   const save = async (status: PublishStatus) => {
     const found = validate(status);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
+    setPreviewing(false);
 
     // A published postcard goes to the shared map. Drafts and scrapbook stops
     // stay on the device, which is what the local store is for.
@@ -235,7 +256,7 @@ export function CreatePostcardScreen() {
         {aiSource === 'demo' ? (
           <Notice
             icon="cloud-offline-outline"
-            tone="caramel"
+            tone="slate"
             message="Gemini was unavailable, so this is the demo fallback page. Edit it freely."
           />
         ) : null}
@@ -245,7 +266,7 @@ export function CreatePostcardScreen() {
             message="Gemini drafted the note and tags from your photo. Edit anything before publishing."
           />
         ) : null}
-        {errors.form ? <Notice icon="warning-outline" tone="cherry" message={errors.form} /> : null}
+        {errors.form ? <Notice icon="warning-outline" tone="navy" message={errors.form} /> : null}
 
         <FormField
           label="Place"
@@ -260,8 +281,8 @@ export function CreatePostcardScreen() {
           />
           {linkedPlace?.coordinate ? (
             <View style={styles.linked}>
-              <Ionicons name="location" size={14} color={Colors.olive} />
-              <AppText variant="caption" color={Colors.blackOlive}>
+              <Ionicons name="location" size={14} color={Colors.slate} />
+              <AppText variant="caption" color={Colors.navy}>
                 {linkedPlace.neighborhood}, {linkedPlace.city} · pinned on the map
               </AppText>
             </View>
@@ -273,12 +294,12 @@ export function CreatePostcardScreen() {
               accessibilityLabel={`Use ${place.name}, ${place.neighborhood}`}
               onPress={() => linkPlace(place.id)}
               style={styles.suggestion}>
-              <Ionicons name="location-outline" size={16} color={Colors.cherry} />
+              <Ionicons name="location-outline" size={16} color={Colors.navy} />
               <View style={styles.flex}>
                 <AppText variant="label">{place.name}</AppText>
                 <AppText variant="caption">{place.neighborhood}</AppText>
               </View>
-              <AppText variant="caption" color={Colors.cherry}>
+              <AppText variant="caption" color={Colors.navy}>
                 Use
               </AppText>
             </PressableScale>
@@ -331,23 +352,41 @@ export function CreatePostcardScreen() {
           />
         </FormField>
 
-        {errors.form ? <Notice icon="alert-circle-outline" tone="cherry" message={errors.form} /> : null}
+        {errors.form ? <Notice icon="alert-circle-outline" tone="navy" message={errors.form} /> : null}
         {Object.keys(errors).length > 0 && !errors.form ? (
-          <Notice icon="alert-circle-outline" tone="cherry" message="A few things need attention before publishing." />
+          <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention before publishing." />
         ) : null}
       </ScrollView>
       <FormFooter
         onSaveDraft={() => save('draft')}
-        onPublish={() => save('published')}
+        onPublish={openPreview}
         publishing={saving}
-        publishLabel={editing?.status === 'published' ? 'Update' : 'Publish'}
+        publishLabel="Preview"
       />
+
+      {author ? (
+        <PreviewModal
+          visible={previewing}
+          visibility={visibility}
+          postLabel={editing?.status === 'published' ? 'Update' : 'Post'}
+          onEdit={() => setPreviewing(false)}
+          onPost={() => save('published')}>
+          <PostcardView
+            photo={photo}
+            note={note.trim()}
+            place={previewPlace}
+            author={author}
+            date={editing?.visitedOn ?? new Date().toISOString()}
+            isOwn
+          />
+        </PreviewModal>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
   aiRow: { flexDirection: 'row', marginBottom: Spacing.lg },
@@ -359,7 +398,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
 });

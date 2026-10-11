@@ -27,14 +27,14 @@ const OPTIONS: Option[] = [
     title: 'Create a postcard',
     detail: 'One place, one photo, and a short note about why you loved it.',
     href: '/create/postcard',
-    tone: Colors.cherrySoft,
+    tone: Colors.navySoft,
   },
   {
     icon: 'albums-outline',
     title: 'Create a scrapbook',
     detail: 'Your photos around a theme, laid out like a mood board.',
     href: '/create/scrapbook',
-    tone: Colors.sageSoft,
+    tone: Colors.skySoft,
   },
 ];
 
@@ -60,13 +60,13 @@ export function CreateActionSheet({ visible, onClose }: CreateActionSheetProps) 
             onPress={() => choose(option.href)}
             style={styles.option}>
             <View style={[styles.icon, { backgroundColor: option.tone }]}>
-              <Ionicons name={option.icon} size={22} color={Colors.cherry} />
+              <Ionicons name={option.icon} size={22} color={Colors.navy} />
             </View>
             <View style={styles.optionText}>
               <AppText variant="label">{option.title}</AppText>
               <AppText variant="caption">{option.detail}</AppText>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={Colors.muted} />
+            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
           </PressableScale>
         ))}
       </View>
@@ -77,7 +77,7 @@ export function CreateActionSheet({ visible, onClose }: CreateActionSheetProps) 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: Colors.overlay },
   sheet: {
-    backgroundColor: Colors.cream,
+    backgroundColor: Colors.background,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     paddingHorizontal: Gutter,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     padding: Spacing.lg,
     borderRadius: Radius.lg,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
   },
   icon: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   optionText: { flex: 1, gap: 2 },

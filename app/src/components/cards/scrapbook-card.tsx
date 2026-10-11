@@ -31,7 +31,7 @@ export function ScrapbookCard({ item, aspect, now, onPress }: ScrapbookCardProps
         <View style={styles.cover}>
           <PhotoView photo={item.cover} aspect={aspect} style={styles.photo} />
           <View style={styles.count}>
-            <Ionicons name="albums-outline" size={12} color={Colors.cream} />
+            <Ionicons name="albums-outline" size={12} color={Colors.white} />
             <AppText style={styles.countText}>{item.media.length} photos</AppText>
           </View>
         </View>
@@ -52,9 +52,9 @@ const styles = StyleSheet.create({
   card: { gap: Spacing.sm },
   stack: { paddingTop: 8, paddingRight: 6 },
   page: { position: 'absolute', top: 0, bottom: 8, left: 8, right: 0, borderRadius: Radius.md },
-  pageBack: { backgroundColor: Colors.sage, transform: [{ rotate: '3deg' }] },
-  pageMid: { backgroundColor: Colors.caramel, top: 4, left: 4, right: 3, transform: [{ rotate: '-1.5deg' }] },
-  cover: { borderRadius: Radius.md, overflow: 'hidden', backgroundColor: Colors.creamDeep },
+  pageBack: { backgroundColor: Colors.sky, transform: [{ rotate: '3deg' }] },
+  pageMid: { backgroundColor: Colors.navySoft, top: 4, left: 4, right: 3, transform: [{ rotate: '-1.5deg' }] },
+  cover: { borderRadius: Radius.md, overflow: 'hidden', backgroundColor: Colors.backgroundDeep },
   photo: { width: '100%' },
   count: {
     position: 'absolute',
@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Radius.pill,
-    backgroundColor: 'rgba(41, 46, 30, 0.82)',
+    backgroundColor: 'rgba(22, 44, 94, 0.82)',
   },
-  countText: { fontFamily: Fonts.sansSemiBold, fontSize: 11, color: Colors.cream },
+  countText: { fontFamily: Fonts.sansSemiBold, fontSize: 11, color: Colors.white },
   text: { gap: 3, paddingHorizontal: 2 },
 });
