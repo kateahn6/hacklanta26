@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { DEMO_USER_ID } from '@/data/content-source';
 import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
-import type { ApiScrapbook, Entry, Place as ApiPlace, ReturningPlace } from '@/lib/types';
+import type { Entry, Place as ApiPlace, ReturningPlace } from '@/lib/types';
 import type { CategoryId, Place, Postcard, Scrapbook, User } from '@/types';
 
 /**
@@ -68,32 +68,6 @@ function toPostcard(entry: Entry, placeId: string, me: string | undefined): Post
   };
 }
 
-const KNOWN_CATEGORIES: CategoryId[] = ['food', 'art', 'music', 'nature', 'culture', 'hidden'];
-
-function toSharedScrapbook(s: ApiScrapbook, me: string | undefined): Scrapbook {
-  return {
-    id: s.id,
-    title: s.title,
-    description: s.description,
-    city: s.city,
-    authorId: asAuthor(s.owner_id, me),
-    cover: s.cover_url ? { source: { uri: s.cover_url }, aspect: s.cover_aspect ?? 1 } : null,
-    categories: s.categories.filter((c): c is CategoryId => KNOWN_CATEGORIES.includes(c as CategoryId)),
-    media: s.media.map((m) => ({
-      id: m.id,
-      photo: { source: { uri: m.photo_url }, aspect: m.aspect },
-      caption: m.caption ?? undefined,
-      authorId: asAuthor(m.author_id, me),
-    })),
-    visibility: s.visibility,
-    status: 'published',
-    createdAt: s.created_at,
-    remote: true,
-    accessCode: s.access_code ?? undefined,
-    collaboratorIds: s.members.map((member) => asAuthor(member.id, me)),
-  };
-}
-
 export interface ApiContent {
   users: User[];
   places: Place[];
@@ -106,7 +80,7 @@ export interface ApiContent {
 }
 
 export function useApiContent(): ApiContent {
-  const { places: apiPlaces, returning, scrapbooks: apiScrapbooks, username: myName, loading, error } = useData();
+  const { places: apiPlaces, returning, username: myName, loading, error } = useData();
   const { profile } = useAuth();
   const me = profile?.sub;
 
@@ -172,16 +146,6 @@ export function useApiContent(): ApiContent {
 
     postcards.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-    for (const apiScrapbook of apiScrapbooks) {
-      scrapbooks.push(toSharedScrapbook(apiScrapbook, me));
-      for (const member of [{ id: apiScrapbook.owner_id, name: apiScrapbook.owner_name }, ...apiScrapbook.members]) {
-        const id = asAuthor(member.id, me);
-        if (!users.has(id) && id !== DEMO_USER_ID) {
-          users.set(id, { id, name: member.name ?? 'A friend', neighborhood: 'Atlanta' });
-        }
-      }
-    }
-
     // Always know who "you" are, even before your first post, so create and preview have an author.
     if (me && !users.has(DEMO_USER_ID)) {
       users.set(DEMO_USER_ID, {
@@ -200,5 +164,5 @@ export function useApiContent(): ApiContent {
       loading,
       error,
     };
-  }, [apiPlaces, apiScrapbooks, error, loading, me, myName, returning]);
+  }, [apiPlaces, error, loading, me, myName, returning]);
 }

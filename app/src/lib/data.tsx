@@ -2,12 +2,11 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 import { ApiError, api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import type { ApiScrapbook, Entry, Place, ReturningPlace } from '@/lib/types';
+import type { Entry, Place, ReturningPlace } from '@/lib/types';
 
 type DataValue = {
   places: Place[];
   returning: ReturningPlace[];
-  scrapbooks: ApiScrapbook[];
   /** My random public username, assigned by the API on first sign-in. */
   username: string | null;
   /** When I first signed in, from GET /api/me. */
@@ -25,7 +24,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const { session, profile, getAccessToken, signOut } = useAuth();
   const [places, setPlaces] = useState<Place[]>([]);
   const [returning, setReturning] = useState<ReturningPlace[]>([]);
-  const [scrapbooks, setScrapbooks] = useState<ApiScrapbook[]>([]);
   const [username, setUsername] = useState<string | null>(null);
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const [friendCount, setFriendCount] = useState(0);
@@ -36,7 +34,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!session) {
       setPlaces([]);
       setReturning([]);
-      setScrapbooks([]);
       setUsername(null);
       setMemberSince(null);
       setFriendCount(0);
@@ -48,10 +45,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const token = await getAccessToken();
       // Loaded independently: the ranking depends on the continuous aggregate,
       // and a missing aggregate must not blank out the map's pins.
-      const [placesRes, returningRes, scrapbooksRes, meRes] = await Promise.allSettled([
+      const [placesRes, returningRes, meRes] = await Promise.allSettled([
         api<{ places: Place[] }>('/api/places', { token, profile }),
         api<{ returning: ReturningPlace[] }>('/api/returning', { token, profile }),
-        api<{ scrapbooks: ApiScrapbook[] }>('/api/scrapbooks', { token, profile }),
         api<{ user: { username?: string; created_at?: string }; friends?: unknown[] }>('/api/me', { token, profile }),
       ]);
       if (meRes.status === 'fulfilled') {
@@ -59,8 +55,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setMemberSince(meRes.value.user.created_at ?? null);
         setFriendCount(meRes.value.friends?.length ?? 0);
       }
-      // Shared scrapbooks are optional: an API without them must not break the map.
-      setScrapbooks(scrapbooksRes.status === 'fulfilled' ? (scrapbooksRes.value.scrapbooks ?? []) : []);
       if (placesRes.status === 'fulfilled') {
         setPlaces(placesRes.value.places ?? []);
       } else {
@@ -100,8 +94,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo<DataValue>(
-    () => ({ places, returning, scrapbooks, username, memberSince, friendCount, loading, error, refresh, findEntry }),
-    [error, findEntry, friendCount, loading, memberSince, places, refresh, returning, scrapbooks, username]
+    () => ({ places, returning, username, memberSince, friendCount, loading, error, refresh, findEntry }),
+    [error, findEntry, friendCount, loading, memberSince, places, refresh, returning, username]
   );
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

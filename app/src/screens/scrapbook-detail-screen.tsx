@@ -3,10 +3,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadges } from '@/components/cards/status-badges';
-import { GetCodeCard } from '@/components/scrapbook/get-code-card';
 import { ScrapbookView } from '@/components/scrapbook/scrapbook-view';
-import { ShareCodeCard } from '@/components/scrapbook/share-code-card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DeleteButton } from '@/components/ui/delete-button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -15,13 +12,12 @@ import { TopBar } from '@/components/ui/top-bar';
 import { useNow } from '@/hooks/use-now';
 import { scrapbookPlaceIds, toScrapbookItem } from '@/lib/feed';
 import { useDeletePost } from '@/lib/use-delete-post';
-import { canViewScrapbook, isCollaborator, isOwn } from '@/lib/visibility';
+import { canViewScrapbook, isOwn } from '@/lib/visibility';
 import { useContent } from '@/store/content';
 import { Colors, Spacing } from '@/theme/tokens';
-import type { User } from '@/types';
 
 export function ScrapbookDetailScreen() {
-  const { id, justPublished, joined } = useLocalSearchParams<{ id: string; justPublished?: string; joined?: string }>();
+  const { id, justPublished } = useLocalSearchParams<{ id: string; justPublished?: string }>();
   const insets = useSafeAreaInsets();
   const content = useContent();
   const now = useNow();
@@ -46,8 +42,6 @@ export function ScrapbookDetailScreen() {
   const item = toScrapbookItem(content, scrapbook);
   const own = isOwn(scrapbook);
   const canDelete = own && !isSharedScrapbook(scrapbook.id);
-  const canAddPhotos = isCollaborator(scrapbook) && !isSharedScrapbook(scrapbook.id);
-  const peopleCount = scrapbook.collaboratorIds?.length ?? 0;
   const hasMapPlaces = [...scrapbookPlaceIds(scrapbook)].some((placeId) => content.placeById.get(placeId)?.coordinate);
 
   return (
@@ -63,9 +57,7 @@ export function ScrapbookDetailScreen() {
           author={item.author}
           isOwn={own}
           notice={
-            joined ? (
-              <Notice icon="people" message="You joined this scrapbook. Tap Add photos to add yours." />
-            ) : justPublished ? (
+            justPublished ? (
               <Notice
                 icon="checkmark-circle"
                 message={
@@ -78,15 +70,9 @@ export function ScrapbookDetailScreen() {
               />
             ) : null
           }
-          meta={
-            <View style={styles.meta}>
-              {peopleCount > 1 ? <Badge label={`Shared · ${peopleCount} people`} icon="people" tone="navy" /> : null}
-              <StatusBadges item={scrapbook} now={now} />
-            </View>
-          }
+          meta={<StatusBadges item={scrapbook} now={now} />}
           actions={
-            <>
-            {hasMapPlaces || canAddPhotos ? (
+            hasMapPlaces || own ? (
               <View style={styles.actions}>
                 {hasMapPlaces ? (
                   <Button
@@ -97,29 +83,16 @@ export function ScrapbookDetailScreen() {
                     onPress={() => router.push({ pathname: '/map', params: { scrapbookId: scrapbook.id } })}
                   />
                 ) : null}
-                {canAddPhotos ? (
+                {own ? (
                   <Button
-                    label={own ? 'Edit' : 'Add photos'}
-                    icon={own ? 'create-outline' : 'add'}
+                    label="Edit"
+                    icon="create-outline"
                     flex={!hasMapPlaces}
                     onPress={() => router.push({ pathname: '/create/scrapbook', params: { id: scrapbook.id } })}
                   />
                 ) : null}
               </View>
-            ) : null}
-            {scrapbook.accessCode ? (
-              <ShareCodeCard
-                accessCode={scrapbook.accessCode}
-                scrapbookTitle={scrapbook.title}
-                collaborators={(scrapbook.collaboratorIds ?? [])
-                  .map((userId) => content.userById.get(userId))
-                  .filter((u): u is User => u !== undefined)}
-                ownerId={scrapbook.authorId}
-              />
-            ) : own && !isSharedScrapbook(scrapbook.id) ? (
-              <GetCodeCard scrapbook={scrapbook} />
-            ) : null}
-            </>
+            ) : null
           }
         />
       </ScrollView>
@@ -130,6 +103,5 @@ export function ScrapbookDetailScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
-  meta: { alignItems: 'flex-end', gap: 4 },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.xs },
 });

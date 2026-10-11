@@ -44,29 +44,3 @@ export type ScrapbookPage = {
   source?: 'gemini' | 'demo';
   note?: string;
 };
-
-export type ApiScrapbookMedia = {
-  id: string;
-  author_id: string;
-  photo_url: string;
-  aspect: number;
-  caption: string | null;
-};
-
-export type ApiScrapbook = {
-  id: string;
-  owner_id: string;
-  owner_name: string | null;
-  title: string;
-  description: string;
-  city: string;
-  categories: string[];
-  cover_url: string | null;
-  cover_aspect: number | null;
-  visibility: 'public' | 'private';
-  access_code: string | null;
-  members: { id: string; name: string | null }[];
-  media: ApiScrapbookMedia[];
-  created_at: string;
-  updated_at: string;
-};

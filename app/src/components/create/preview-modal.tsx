@@ -14,15 +14,13 @@ interface PreviewModalProps {
   postLabel: string;
   onEdit: () => void;
   onPost: () => void;
-  /** Set while the post is uploading. */
-  posting?: boolean;
   /** Lay content out edge to edge (scrapbooks) instead of inside the page gutter (postcards). */
   fullBleed?: boolean;
   children: ReactNode;
 }
 
 /** Full-screen "this is how it will look" step before posting. */
-export function PreviewModal({ visible, visibility, postLabel, onEdit, onPost, posting, fullBleed, children }: PreviewModalProps) {
+export function PreviewModal({ visible, visibility, postLabel, onEdit, onPost, fullBleed, children }: PreviewModalProps) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -41,7 +39,7 @@ export function PreviewModal({ visible, visibility, postLabel, onEdit, onPost, p
         <ScrollView contentContainerStyle={[!fullBleed && styles.padded, { paddingBottom: Spacing.xxl }]}>{children}</ScrollView>
         <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md }]}>
           <Button label="Keep editing" variant="secondary" onPress={onEdit} flex />
-          <Button label={postLabel} icon="paper-plane-outline" onPress={onPost} flex loading={posting} />
+          <Button label={postLabel} icon="paper-plane-outline" onPress={onPost} flex />
         </View>
       </View>
     </Modal>

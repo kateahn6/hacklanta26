@@ -17,7 +17,7 @@ interface Option {
   icon: IconName;
   title: string;
   detail: string;
-  href: '/create/postcard' | '/create/scrapbook' | '/join';
+  href: '/create/postcard' | '/create/scrapbook';
   tone: string;
 }
 
@@ -35,13 +35,6 @@ const OPTIONS: Option[] = [
     detail: 'Your photos around a theme, laid out like a mood board.',
     href: '/create/scrapbook',
     tone: Colors.skySoft,
-  },
-  {
-    icon: 'key-outline',
-    title: 'Join with a code',
-    detail: 'Got a code from a friend? Add your photos to their scrapbook.',
-    href: '/join',
-    tone: Colors.backgroundDeep,
   },
 ];
 

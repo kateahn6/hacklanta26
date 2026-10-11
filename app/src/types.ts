@@ -55,8 +55,6 @@ export interface ScrapbookMedia {
   caption?: string;
   /** Optional link to a place so the scrapbook can be shown on the map. */
   placeId?: string;
-  /** Who added the photo, for shared scrapbooks. */
-  authorId?: string;
 }
 
 export interface Scrapbook {
@@ -73,10 +71,4 @@ export interface Scrapbook {
   status: PublishStatus;
   createdAt: string;
   featured?: boolean;
-  /** Saved on the server, so it can be shared. Local scrapbooks and drafts leave this unset. */
-  remote?: boolean;
-  /** 6-character code friends enter to collaborate. Only visible to members. */
-  accessCode?: string;
-  /** Everyone who can add photos, owner included. */
-  collaboratorIds?: string[];
 }

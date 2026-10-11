@@ -26,10 +26,6 @@ export function ProfileScreen() {
   const posts = buildMyPosts(content, DEMO_USER_ID);
   const postcards = posts.filter((p) => p.kind === 'postcard').length;
   const scrapbooks = posts.filter((p) => p.kind === 'scrapbook');
-  // Scrapbooks with more than one member: ones you shared, or joined with a code.
-  const shared = content.scrapbooks.filter(
-    (s) => (s.collaboratorIds ?? []).includes(DEMO_USER_ID) && (s.collaboratorIds?.length ?? 0) > 1
-  ).length;
   const drafts = posts.filter((p) => p.item.status === 'draft').length;
 
   const confirmSignOut = () =>
@@ -61,14 +57,9 @@ export function ProfileScreen() {
           <InfoTile icon="albums-outline" label="Scrapbooks" value={String(scrapbooks.length)} />
         </View>
         <View style={styles.stats}>
-          <InfoTile icon="people-outline" label="Shared scrapbooks" value={String(shared)} />
+          <InfoTile icon="create-outline" label="Drafts" value={String(drafts)} />
           <InfoTile icon="heart-outline" label="Friends" value={String(friendCount)} />
         </View>
-        {drafts > 0 ? (
-          <AppText variant="caption" style={styles.center}>
-            Includes {drafts} {drafts === 1 ? 'draft' : 'drafts'} saved on this device.
-          </AppText>
-        ) : null}
 
         <Notice
           icon="shield-checkmark-outline"
