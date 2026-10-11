@@ -9,6 +9,7 @@ import { PreviewModal } from '@/components/create/preview-modal';
 import { PhotoPickerField } from '@/components/create/photo-picker-field';
 import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
+import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
 import { PressableScale } from '@/components/ui/pressable-scale';
@@ -17,7 +18,12 @@ import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
 import { DEMO_USER_ID } from '@/data/content-source';
+import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
+import { useData } from '@/lib/data';
 import { newId } from '@/lib/format';
+import { toDataUrl } from '@/lib/photos';
+import type { ScrapbookPage } from '@/lib/types';
 import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
@@ -25,14 +31,23 @@ import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 import type { CategoryId, ExpiryOption, Photo, Place, Postcard, PublishStatus, Visibility } from '@/types';
 
 const NOTE_LIMIT = 200;
+/** Used when a new place has no picked coordinate: the demo city's centre. */
+const ATLANTA = { latitude: 33.765, longitude: -84.377 };
 const HOUR = 60 * 60 * 1000;
 const EXPIRY_MS: Record<ExpiryOption, number | null> = { never: null, '24h': 24 * HOUR, '7d': 7 * 24 * HOUR };
 
 type Errors = Partial<Record<'photo' | 'place' | 'city' | 'note' | 'form', string>>;
 
 export function CreatePostcardScreen() {
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{
+    id?: string;
+    /** Set when the map sent us here with a dropped pin. */
+    lat?: string;
+    lng?: string;
+  }>();
   const content = useContent();
+  const { profile, getAccessToken } = useAuth();
+  const { refresh } = useData();
   const upsertPlace = useAppStore((s) => s.upsertPlace);
   const upsertPostcard = useAppStore((s) => s.upsertPostcard);
 
@@ -49,6 +64,11 @@ export function CreatePostcardScreen() {
   const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [expiry, setExpiry] = useState<ExpiryOption>(editing?.expiryOption ?? 'never');
   const [errors, setErrors] = useState<Errors>({});
+  const [tags, setTags] = useState<string[]>([]);
+  const [postcardText, setPostcardText] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const author = content.userById.get(DEMO_USER_ID);
 
@@ -71,6 +91,43 @@ export function CreatePostcardScreen() {
     setPlaceName(place.name);
     setCity(place.city);
     setCategory(place.categories[0] ?? null);
+  };
+
+  /** Photo in, scrapbook page out. The backend falls back to a canned page. */
+  const generate = async () => {
+    if (!photo || typeof photo.source === 'number') {
+      setErrors({ photo: 'Add a photo first so Gemini has something to read.' });
+      return;
+    }
+    setGenerating(true);
+    setErrors({});
+    try {
+      const token = await getAccessToken();
+      // Resized to ~1024px before it leaves the phone.
+      const dataUrl = await toDataUrl(photo.source.uri);
+      const page = await api<ScrapbookPage>('/api/analyze', {
+        method: 'POST',
+        token,
+        profile,
+        body: { photos: [dataUrl], hint: placeName || undefined },
+        timeoutMs: 40_000,
+      });
+      setNote(page.story.slice(0, NOTE_LIMIT));
+      setTags(page.tags);
+      setPostcardText(page.postcard_text);
+      setAiSource(page.source ?? null);
+      if (!placeName.trim()) setPlaceName(page.place_type);
+      if (!category) {
+        const guess = CATEGORIES.find((c) =>
+          page.tags.some((t) => c.id === 'food' ? /coffee|food|bar|market/.test(t) : t.includes(c.id))
+        );
+        if (guess) setCategory(guess.id);
+      }
+    } catch (err: any) {
+      setErrors({ form: err?.message ?? 'Gemini could not read that photo.' });
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const validate = (status: PublishStatus): Errors => {
@@ -101,11 +158,50 @@ export function CreatePostcardScreen() {
     coordinate: null,
   };
 
-  const save = (status: PublishStatus) => {
+  const save = async (status: PublishStatus) => {
     const found = validate(status);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
     setPreviewing(false);
+
+    // A published postcard goes to the shared map. Drafts and scrapbook stops
+    // stay on the device, which is what the local store is for.
+    if (status === 'published' && !editing) {
+      setSaving(true);
+      setErrors({});
+      try {
+        const token = await getAccessToken();
+        const photoUrls =
+          photo && typeof photo.source !== 'number' ? [await toDataUrl(photo.source.uri)] : [];
+        const lat = Number(params.lat ?? linkedPlace?.coordinate?.latitude ?? ATLANTA.latitude);
+        const lng = Number(params.lng ?? linkedPlace?.coordinate?.longitude ?? ATLANTA.longitude);
+        const saved = await api<{ entry: { id: string } }>('/api/entries', {
+          method: 'POST',
+          token,
+          profile,
+          body: {
+            place_id: linkedPlace?.id,
+            place: linkedPlace?.id ? undefined : { name: placeName.trim(), lat, lng },
+            caption: placeName.trim() || null,
+            story: note.trim() || null,
+            tags,
+            postcard_text: postcardText || note.trim() || null,
+            photo_urls: photoUrls,
+          },
+        });
+        await refresh();
+        router.replace({
+          pathname: '/postcard/[id]',
+          params: { id: saved.entry.id, justPublished: '1' },
+        });
+        return;
+      } catch (err: any) {
+        setErrors({ form: err?.message ?? 'Could not save to the shared map.' });
+        return;
+      } finally {
+        setSaving(false);
+      }
+    }
 
     let placeId = linkedPlace?.id;
     if (!placeId) {
@@ -145,6 +241,32 @@ export function CreatePostcardScreen() {
         <FormField label="Photo" error={errors.photo}>
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />
         </FormField>
+
+        <View style={styles.aiRow}>
+          <Button
+            label="Let Gemini write it"
+            icon="sparkles-outline"
+            variant="secondary"
+            onPress={generate}
+            loading={generating}
+            disabled={!photo}
+            flex
+          />
+        </View>
+        {aiSource === 'demo' ? (
+          <Notice
+            icon="cloud-offline-outline"
+            tone="slate"
+            message="Gemini was unavailable, so this is the demo fallback page. Edit it freely."
+          />
+        ) : null}
+        {aiSource === 'gemini' ? (
+          <Notice
+            icon="sparkles"
+            message="Gemini drafted the note and tags from your photo. Edit anything before publishing."
+          />
+        ) : null}
+        {errors.form ? <Notice icon="warning-outline" tone="navy" message={errors.form} /> : null}
 
         <FormField
           label="Place"
@@ -235,7 +357,12 @@ export function CreatePostcardScreen() {
           <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention before publishing." />
         ) : null}
       </ScrollView>
-      <FormFooter onSaveDraft={() => save('draft')} onPublish={openPreview} publishLabel="Preview" />
+      <FormFooter
+        onSaveDraft={() => save('draft')}
+        onPublish={openPreview}
+        publishing={saving}
+        publishLabel="Preview"
+      />
 
       {author ? (
         <PreviewModal
@@ -262,6 +389,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
+  aiRow: { flexDirection: 'row', marginBottom: Spacing.lg },
   linked: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   suggestion: {
     flexDirection: 'row',

@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import { seedContent } from '@/data/content-source';
+import { useApiContent } from '@/lib/api-content';
 import type { Photo, Place, Postcard, Scrapbook, User } from '@/types';
 
 import { useAppStore } from './app-store';
@@ -30,19 +31,29 @@ function merge<T extends { id: string }>(seed: T[], overrides: T[], fix: (overri
   return [...byId.values()];
 }
 
-/** Seed content merged with everything created or edited on this device. */
+/**
+ * Live API content, merged with everything created or edited on this device.
+ *
+ * The bundled seed is only a fallback: as soon as the API returns a single
+ * place it takes over completely, so the app never shows a mix of real and
+ * invented content. With no API (not configured, offline) the seed keeps every
+ * screen populated instead of blank.
+ */
 export function useContent(): Content {
+  const api = useApiContent();
   const userPlaces = useAppStore((s) => s.userPlaces);
   const userPostcards = useAppStore((s) => s.userPostcards);
   const userScrapbooks = useAppStore((s) => s.userScrapbooks);
 
   return useMemo(() => {
-    const places = merge(seedContent.places, userPlaces, (p) => p);
-    const postcards = merge(seedContent.postcards, userPostcards, (p, seed) => ({
+    const live = api.places.length > 0;
+    const base = live ? api : seedContent;
+    const places = merge(base.places, userPlaces, (p) => p);
+    const postcards = merge(base.postcards, userPostcards, (p, seed) => ({
       ...p,
       photo: keepSeedPhoto(seed?.photo, p.photo),
     }));
-    const scrapbooks = merge(seedContent.scrapbooks, userScrapbooks, (s, seed) => ({
+    const scrapbooks = merge(base.scrapbooks, userScrapbooks, (s, seed) => ({
       ...s,
       cover: keepSeedPhoto(seed?.cover, s.cover),
       media: s.media.map((m) => {
@@ -50,7 +61,7 @@ export function useContent(): Content {
         return { ...m, photo: keepSeedPhoto(seedPhoto, m.photo) ?? m.photo };
       }),
     }));
-    const users = seedContent.users;
+    const users = live ? api.users : seedContent.users;
 
     return {
       users,
@@ -62,5 +73,5 @@ export function useContent(): Content {
       postcardById: new Map(postcards.map((p) => [p.id, p])),
       scrapbookById: new Map(scrapbooks.map((s) => [s.id, s])),
     };
-  }, [userPlaces, userPostcards, userScrapbooks]);
+  }, [api, userPlaces, userPostcards, userScrapbooks]);
 }

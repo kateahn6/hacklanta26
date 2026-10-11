@@ -9,18 +9,20 @@ interface FormFooterProps {
   onSaveDraft: () => void;
   onPublish: () => void;
   publishLabel: string;
+  /** Set while the publish is in flight (saving to the shared map). */
+  publishing?: boolean;
 }
 
-export function FormFooter({ onSaveDraft, onPublish, publishLabel }: FormFooterProps) {
+export function FormFooter({ onSaveDraft, onPublish, publishLabel, publishing }: FormFooterProps) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[styles.footer, { paddingBottom: insets.bottom + Spacing.md }]}>
       <View style={styles.buttons}>
-        <Button label="Save draft" variant="secondary" onPress={onSaveDraft} flex />
-        <Button label={publishLabel} onPress={onPublish} flex />
+        <Button label="Save draft" variant="secondary" onPress={onSaveDraft} flex disabled={publishing} />
+        <Button label={publishLabel} onPress={onPublish} flex loading={publishing} />
       </View>
       <AppText variant="caption" style={styles.note}>
-        Prototype: saved on this device only, not shared with other people yet.
+        Publishing saves to the shared map and records a visit. Drafts stay on this device.
       </AppText>
     </View>
   );

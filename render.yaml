@@ -1,0 +1,26 @@
+# Render blueprint for the Unfold API. Either import this file as a Blueprint,
+# or create a Web Service by hand with the same settings:
+#   Root Directory: api    Build: npm install    Start: npm start
+#   Health Check Path: /health
+# Render sets PORT itself; the server reads process.env.PORT.
+services:
+  - type: web
+    name: unfold-api
+    runtime: node
+    plan: free
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      # Set each of these in the Render dashboard; none are committed.
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_AUDIENCE
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEMO_MODE
+        value: "1"
