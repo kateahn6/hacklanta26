@@ -2,7 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { Colors } from '@/constants/theme';
+import { C } from '@/constants/theme';
 import { AuthProvider } from '@/lib/auth';
 import { DataProvider } from '@/lib/data';
 
@@ -12,21 +12,18 @@ export default function RootLayout() {
       <AuthProvider>
         <DataProvider>
           <StatusBar style="dark" />
+          {/* Headers are off: every screen draws the prototype's own detailTop row. */}
           <Stack
             screenOptions={{
-              headerStyle: { backgroundColor: Colors.paper },
-              headerTitleStyle: { color: Colors.ink },
-              headerTintColor: Colors.accent,
-              contentStyle: { backgroundColor: Colors.paper },
+              headerShown: false,
+              animation: 'fade',
+              contentStyle: { backgroundColor: C.cream },
             }}>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="new-entry" options={{ title: 'New scrapbook entry' }} />
-            <Stack.Screen name="share" options={{ title: 'Share this map' }} />
-            <Stack.Screen
-              name="postcard"
-              options={{ title: 'Postcard', presentation: 'modal' }}
-            />
+            <Stack.Screen name="index" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="new-entry" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="share" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="postcard" options={{ presentation: 'modal' }} />
           </Stack>
         </DataProvider>
       </AuthProvider>

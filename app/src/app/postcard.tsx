@@ -1,9 +1,11 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
-import { Share, StyleSheet, Text, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Pressable, Share, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button } from '@/components/ui';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { ActionButton } from '@/components/ui';
+import { s } from '@/constants/styles';
+import { C } from '@/constants/theme';
 import { useData } from '@/lib/data';
 
 export default function PostcardScreen() {
@@ -13,78 +15,94 @@ export default function PostcardScreen() {
 
   if (!found) {
     return (
-      <View style={styles.missing}>
-        <Text style={styles.missingText}>That entry is no longer on the map.</Text>
-      </View>
+      <SafeAreaView style={[s.modalSafe, { alignItems: 'center', justifyContent: 'center' }]}>
+        <Text style={s.cardMeta}>That entry is no longer on the map.</Text>
+      </SafeAreaView>
     );
   }
 
   const { entry, place } = found;
   const photo = entry.photo_urls[0];
-  const message =
-    entry.postcard_text ?? entry.caption ?? `Thinking of you from ${place.name}.`;
+  const message = entry.postcard_text ?? entry.caption ?? `Thinking of you from ${place.name}.`;
 
   return (
-    <View style={styles.root}>
-      <View style={styles.card}>
-        {photo ? (
-          <Image source={{ uri: photo }} style={styles.photo} contentFit="cover" />
-        ) : (
-          <View style={[styles.photo, styles.photoEmpty]} />
-        )}
-        <View style={styles.overlay}>
-          <Text style={styles.message}>{message}</Text>
-          <Text style={styles.from}>
-            — {entry.user_name ?? 'a friend'}, {place.name}
-          </Text>
-        </View>
-        <Text style={styles.stamp}>UNFOLD</Text>
+    <SafeAreaView style={s.modalSafe}>
+      <View style={s.detailTop}>
+        <Pressable onPress={() => router.back()} style={s.backButton}>
+          <Text style={s.backText}>{'←'}</Text>
+        </Pressable>
+        <Text style={s.eyebrow}>A POSTCARD FROM HERE</Text>
+        <View style={{ width: 34 }} />
       </View>
 
-      <Button
-        label="Send this postcard"
-        onPress={() =>
-          Share.share({ message: `${message}\n\n— from ${place.name}, via Unfold` })
-        }
-      />
-    </View>
+      <View style={{ flex: 1, paddingHorizontal: 18, paddingBottom: 18, gap: 14 }}>
+        <View
+          style={{
+            flex: 1,
+            borderRadius: 12,
+            overflow: 'hidden',
+            backgroundColor: C.ink,
+            borderWidth: 1,
+            borderColor: C.line,
+          }}>
+          {photo ? (
+            <Image
+              source={{ uri: photo }}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              contentFit="cover"
+            />
+          ) : null}
+
+          <View
+            style={{
+              position: 'absolute',
+              top: 14,
+              right: 14,
+              borderWidth: 2,
+              borderColor: C.paper,
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+            }}>
+            <Text style={{ color: C.paper, fontSize: 10, fontWeight: '900', letterSpacing: 3 }}>
+              UNFOLD
+            </Text>
+          </View>
+
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              padding: 22,
+              gap: 8,
+              backgroundColor: 'rgba(33,31,28,0.58)',
+            }}>
+            <Text
+              style={{
+                color: C.paper,
+                fontSize: 22,
+                lineHeight: 30,
+                fontWeight: '700',
+                fontStyle: 'italic',
+              }}>
+              {'“'}
+              {message}
+              {'”'}
+            </Text>
+            <Text style={{ color: C.rose, fontSize: 12, letterSpacing: 0.4 }}>
+              {'—'} {entry.user_name ?? 'a friend'}, {place.name}
+            </Text>
+          </View>
+        </View>
+
+        <ActionButton
+          label="Send this postcard"
+          onPress={() =>
+            Share.share({ message: `${message}\n\n— from ${place.name}, via Unfold` })
+          }
+        />
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: Colors.paper, padding: Spacing.md, gap: Spacing.md },
-  missing: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.paper },
-  missingText: { color: Colors.inkSoft, fontSize: 15 },
-  card: {
-    flex: 1,
-    borderRadius: Radius.md,
-    overflow: 'hidden',
-    backgroundColor: Colors.ink,
-  },
-  photo: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  photoEmpty: { backgroundColor: Colors.inkSoft },
-  overlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    backgroundColor: 'rgba(28,26,23,0.55)',
-  },
-  message: { color: '#fff', fontSize: 22, lineHeight: 29, fontWeight: '600' },
-  from: { color: '#F0E6D8', fontSize: 14 },
-  stamp: {
-    position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 3,
-    borderWidth: 2,
-    borderColor: '#fff',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-  },
-});

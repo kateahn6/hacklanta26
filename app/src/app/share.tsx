@@ -1,9 +1,11 @@
 import * as Clipboard from 'expo-clipboard';
+import { router } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Banner, Button, Label } from '@/components/ui';
-import { Colors, Radius, Spacing } from '@/constants/theme';
+import { ActionButton, Banner } from '@/components/ui';
+import { s } from '@/constants/styles';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
@@ -16,8 +18,8 @@ export default function ShareScreen() {
   const [code, setCode] = useState<string | null>(null);
   const [entered, setEntered] = useState('');
   const [joined, setJoined] = useState<Friend | null>(null);
-  const [busy, setBusy] = useState<'invite' | 'accept' | 'demo' | null>(null);
   const [demoJoined, setDemoJoined] = useState<string[] | null>(null);
+  const [busy, setBusy] = useState<'invite' | 'accept' | 'demo' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const createInvite = async () => {
@@ -80,111 +82,94 @@ export default function ShareScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      {error ? <Banner text={error} /> : null}
-
-      <View style={styles.block}>
-        <Label>Invite a friend</Label>
-        <Text style={styles.body}>
-          Send them this code. When they type it in, both of your maps merge — their pins show up
-          on yours and yours on theirs.
-        </Text>
-        {code ? <Text selectable style={styles.code}>{code}</Text> : null}
-        <Button
-          label={code ? 'New code' : 'Create an invite code'}
-          busy={busy === 'invite'}
-          onPress={createInvite}
-        />
-        {code ? (
-          <>
-            <Button
-              variant="secondary"
-              label="Copy code"
-              onPress={() => Clipboard.setStringAsync(code)}
-            />
-            <Button
-              variant="secondary"
-              label="Share…"
-              onPress={() =>
-                Share.share({
-                  message: `Join my Unfold map — open the app and enter code ${code}`,
-                })
-              }
-            />
-          </>
-        ) : null}
+    <SafeAreaView style={s.modalSafe}>
+      <View style={s.detailTop}>
+        <Pressable onPress={() => router.back()} style={s.backButton}>
+          <Text style={s.backText}>{'←'}</Text>
+        </Pressable>
+        <Text style={s.eyebrow}>SHARE THE MAP</Text>
+        <View style={{ width: 34 }} />
       </View>
 
-      <View style={styles.block}>
-        <Label>Join someone&apos;s map</Label>
+      <ScrollView contentContainerStyle={s.createPage} keyboardShouldPersistTaps="handled">
+        <Text style={s.detailTitle}>Better with friends.</Text>
+        <Text style={s.heroCopy}>
+          Swap a code and your maps merge — their pins appear on yours, yours on theirs.
+        </Text>
+
+        {error ? <Banner text={error} /> : null}
+
+        <View style={s.infoBox}>
+          <Text style={s.sectionTitle}>Invite a friend</Text>
+          {code ? (
+            <Text selectable style={s.code}>
+              {code}
+            </Text>
+          ) : null}
+          <ActionButton
+            label={code ? 'New code' : 'Create an invite code'}
+            busy={busy === 'invite'}
+            onPress={createInvite}
+          />
+          {code ? (
+            <View style={s.optionRow}>
+              <ActionButton
+                secondary
+                label="Copy"
+                onPress={() => Clipboard.setStringAsync(code)}
+              />
+              <ActionButton
+                secondary
+                label="Share…"
+                onPress={() =>
+                  Share.share({
+                    message: `Join my Unfold map — open the app and enter code ${code}`,
+                  })
+                }
+              />
+            </View>
+          ) : null}
+        </View>
+
+        <Text style={s.formLabel}>JOIN SOMEONE&rsquo;S MAP</Text>
         <TextInput
-          style={styles.input}
+          style={[s.formInput, { fontSize: 20, letterSpacing: 3, textAlign: 'center' }]}
           value={entered}
           onChangeText={setEntered}
           autoCapitalize="characters"
           autoCorrect={false}
           placeholder="6-character code"
-          placeholderTextColor={Colors.inkSoft}
+          placeholderTextColor="#81786E"
         />
-        <Button label="Join" busy={busy === 'accept'} onPress={accept} />
+        <View style={{ height: 10 }} />
+        <ActionButton label="Join" busy={busy === 'accept'} onPress={accept} />
         {joined ? (
           <Banner
             tone="info"
             text={`You and ${joined.name ?? joined.email ?? 'your friend'} now share a map.`}
           />
         ) : null}
-        <Text style={styles.hint}>
-          Or enter MAYA01 / THEO01 / REN001 to join one seeded account.
-        </Text>
-      </View>
 
-      <View style={styles.block}>
-        <Label>Demo map</Label>
-        <Text style={styles.body}>
-          Befriends all three seeded Atlanta accounts at once, so your map is
-          populated immediately.
-        </Text>
-        <Button
-          variant="secondary"
-          label="Join the demo map"
-          busy={busy === 'demo'}
-          onPress={joinDemo}
-        />
-        {demoJoined ? (
-          <Banner tone="info" text={`Now sharing a map with ${demoJoined.join(', ')}.`} />
-        ) : null}
-      </View>
-    </ScrollView>
+        <View style={[s.infoBox, { marginTop: 26 }]}>
+          <Text style={s.sectionTitle}>Demo map</Text>
+          <Text style={s.cardMeta}>
+            Befriends all three seeded Atlanta accounts at once, so your map is populated
+            immediately.
+          </Text>
+          <ActionButton
+            secondary
+            label="Join the demo map"
+            busy={busy === 'demo'}
+            onPress={joinDemo}
+          />
+          {demoJoined ? (
+            <Banner tone="info" text={`Now sharing a map with ${demoJoined.join(', ')}.`} />
+          ) : null}
+          <Text style={s.smallNote}>
+            Or enter MAYA01 / THEO01 / REN001 above to join one seeded account.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: Spacing.md, gap: Spacing.md },
-  block: {
-    backgroundColor: Colors.card,
-    borderRadius: Radius.md,
-    borderWidth: 1,
-    borderColor: Colors.line,
-    padding: Spacing.md,
-    gap: Spacing.sm,
-  },
-  body: { fontSize: 14, lineHeight: 20, color: Colors.inkSoft },
-  code: {
-    fontSize: 34,
-    fontWeight: '800',
-    letterSpacing: 6,
-    textAlign: 'center',
-    color: Colors.accent,
-    paddingVertical: Spacing.sm,
-  },
-  input: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radius.sm,
-    padding: Spacing.sm + 2,
-    fontSize: 20,
-    letterSpacing: 3,
-    textAlign: 'center',
-    color: Colors.ink,
-  },
-  hint: { fontSize: 12, color: Colors.inkSoft },
-});
