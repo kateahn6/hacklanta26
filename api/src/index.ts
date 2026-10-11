@@ -3,7 +3,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 
 import { requireUser, user } from './lib/auth.js';
 import { db, query } from './lib/db.js';
-import { DEMO_MODE, env, issuer, reportEnv } from './lib/env.js';
+import { audience, DEMO_MODE, env, issuer, reportEnv } from './lib/env.js';
 import { analyzePhotos, CANNED, polishText } from './lib/gemini.js';
 
 const app = express();
@@ -26,7 +26,7 @@ app.get('/health', route(async (_req, res) => {
   const out: Record<string, unknown> = {
     ok: true,
     issuer: env('AUTH0_DOMAIN') ? issuer() : null,
-    audience: env('AUTH0_AUDIENCE') ?? null,
+    audience: env('AUTH0_AUDIENCE') ? audience() : null,
     gemini_key: Boolean(env('GEMINI_API_KEY')),
     demo_mode: DEMO_MODE(),
   };

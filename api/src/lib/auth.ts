@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
-import { issuer, require_ } from './env.js';
+import { audience, issuer } from './env.js';
 import { query } from './db.js';
 
 export type AuthedUser = {
@@ -54,7 +54,7 @@ export async function requireUser(req: Request, res: Response, next: NextFunctio
   try {
     const verified = await jwtVerify(token, keys(), {
       issuer: issuer(),
-      audience: require_('AUTH0_AUDIENCE'),
+      audience: audience(),
     });
     payload = verified.payload as Record<string, unknown>;
   } catch (err) {

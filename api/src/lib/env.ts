@@ -28,6 +28,21 @@ export function require_(key: Key): string {
 
 export const DEMO_MODE = () => env('DEMO_MODE') === '1';
 
+/**
+ * The audience Auth0 put in the token, matched exactly. A trailing slash in
+ * the env var would reject every otherwise valid token, so it is trimmed.
+ */
+export function audience(): string {
+  const raw = require_('AUTH0_AUDIENCE').trim();
+  const cleaned = raw.replace(/\/+$/, '');
+  if (cleaned !== raw) {
+    console.warn(
+      `[unfold] AUTH0_AUDIENCE had a trailing slash ("${raw}"); using "${cleaned}"`
+    );
+  }
+  return cleaned;
+}
+
 /** Issuer always carries the trailing slash Auth0 puts in the `iss` claim. */
 export function issuer(): string {
   const domain = require_('AUTH0_DOMAIN')
