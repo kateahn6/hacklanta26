@@ -4,7 +4,7 @@ import express, { type NextFunction, type Request, type Response } from 'express
 import { requireUser, user } from './lib/auth.js';
 import { db, query } from './lib/db.js';
 import { DEMO_MODE, env, issuer, reportEnv } from './lib/env.js';
-import { analyzePhotos, CANNED } from './lib/gemini.js';
+import { analyzePhotos, CANNED, polishText } from './lib/gemini.js';
 
 const app = express();
 
@@ -246,6 +246,48 @@ authed.post('/analyze', route(async (req, res) => {
     console.warn('[unfold] analyze fell back:', message);
     if (DEMO_MODE()) {
       res.json({ ...CANNED, source: 'demo', note: message });
+      return;
+    }
+    res.status(502).json({ error: message });
+  }
+}));
+
+/**
+ * Rewrites what the user wrote, for when the photos say little or they would
+ * rather write it themselves. Unlike /api/analyze, the DEMO_MODE fallback here
+ * returns their own text untouched: silently replacing someone's writing with
+ * a canned paragraph would be worse than doing nothing.
+ */
+authed.post('/polish', route(async (req, res) => {
+  const { text, hint } = req.body ?? {};
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    res.status(400).json({ error: 'text is required' });
+    return;
+  }
+  try {
+    const page = await Promise.race([
+      polishText(text.trim(), typeof hint === 'string' ? hint : undefined),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error(`Gemini timed out after ${ANALYZE_TIMEOUT_MS / 1000}s`)),
+          ANALYZE_TIMEOUT_MS
+        )
+      ),
+    ]);
+    res.json({ ...page, source: 'gemini' });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Gemini failed';
+    console.warn('[unfold] polish fell back:', message);
+    if (DEMO_MODE()) {
+      res.json({
+        place_type: '',
+        caption: '',
+        story: text.trim(),
+        tags: [],
+        postcard_text: '',
+        source: 'demo',
+        note: message,
+      });
       return;
     }
     res.status(502).json({ error: message });

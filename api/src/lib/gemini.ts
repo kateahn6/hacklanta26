@@ -49,6 +49,24 @@ Return JSON only:
 - tags: 3-5 lowercase tags, no "#"
 - postcard_text: 1-2 sentences written to a friend, like the back of a postcard`;
 
+const POLISH_PROMPT = `You are tidying up a note someone wrote about a real place
+they visited, for a shared travel scrapbook. Think Grammarly, not a ghostwriter.
+
+Rules:
+- Keep their meaning, their opinions and their voice. Do not invent details,
+  places, prices, names or events that are not in what they wrote.
+- Fix spelling, grammar and punctuation. Tighten rambling sentences.
+- If the note is very short, you may smooth it, but do not pad it out with
+  things they did not say.
+- Never add ratings, stars or scores.
+
+Return JSON only:
+- place_type: 2-4 words for the kind of place, inferred only from their note
+- caption: one warm line, under 80 characters
+- story: their note, rewritten clean, 2-3 sentences, first person
+- tags: 3-5 lowercase tags drawn from what they actually mentioned
+- postcard_text: 1-2 sentences to a friend, in their voice`;
+
 export const CANNED: ScrapbookPage = {
   place_type: 'neighborhood coffee bar',
   caption: 'The corner table where the afternoon went missing.',
@@ -85,6 +103,28 @@ function parse(text: string): ScrapbookPage {
     tags: raw.tags.filter((t): t is string => typeof t === 'string').slice(0, 5),
     postcard_text: raw.postcard_text,
   };
+}
+
+/**
+ * Rewrites a note the user typed, rather than reading a photo. Used when the
+ * photos are unhelpful, or when someone writes their own entry and just wants
+ * it tidied.
+ */
+export async function polishText(text: string, hint?: string): Promise<ScrapbookPage> {
+  const ai = new GoogleGenAI({ apiKey: require_('GEMINI_API_KEY') });
+  const where = hint ? `\n\nThe place is called: ${hint}` : '';
+  const result = await ai.models.generateContent({
+    model: env('GEMINI_MODEL') ?? DEFAULT_MODEL,
+    contents: [{ role: 'user', parts: [{ text: `${POLISH_PROMPT}${where}\n\nTheir note:\n${text}` }] }],
+    config: {
+      responseMimeType: 'application/json',
+      responseSchema: RESPONSE_SCHEMA as any,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  });
+  const out = result.text;
+  if (!out) throw new Error('Gemini returned no text');
+  return parse(out);
 }
 
 export async function analyzePhotos(

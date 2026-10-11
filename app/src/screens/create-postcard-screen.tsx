@@ -67,6 +67,7 @@ export function CreatePostcardScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [postcardText, setPostcardText] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [polishing, setPolishing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
@@ -127,6 +128,40 @@ export function CreatePostcardScreen() {
       setErrors({ form: err?.message ?? 'Gemini could not read that photo.' });
     } finally {
       setGenerating(false);
+    }
+  };
+
+  /**
+   * Tidies up what the user already wrote, for when the photo says little or
+   * they would rather write it themselves. Only non-empty fields are applied:
+   * the server's fallback echoes the original note back with the rest blank,
+   * and blanking someone's work would be worse than doing nothing.
+   */
+  const polish = async () => {
+    if (!note.trim()) {
+      setErrors({ note: 'Write a few words first and Gemini will tidy them up.' });
+      return;
+    }
+    setPolishing(true);
+    setErrors({});
+    try {
+      const token = await getAccessToken();
+      const page = await api<ScrapbookPage>('/api/polish', {
+        method: 'POST',
+        token,
+        profile,
+        body: { text: note.trim(), hint: placeName || undefined },
+        timeoutMs: 40_000,
+      });
+      if (page.story) setNote(page.story.slice(0, NOTE_LIMIT));
+      if (page.tags?.length) setTags(page.tags);
+      if (page.postcard_text) setPostcardText(page.postcard_text);
+      if (page.place_type && !placeName.trim()) setPlaceName(page.place_type);
+      setAiSource(page.source ?? null);
+    } catch (err: any) {
+      setErrors({ form: err?.message ?? 'Gemini could not rewrite that.' });
+    } finally {
+      setPolishing(false);
     }
   };
 
@@ -244,12 +279,21 @@ export function CreatePostcardScreen() {
 
         <View style={styles.aiRow}>
           <Button
-            label="Let Gemini write it"
+            label="Write from photo"
             icon="sparkles-outline"
             variant="secondary"
             onPress={generate}
             loading={generating}
-            disabled={!photo}
+            disabled={!photo || polishing}
+            flex
+          />
+          <Button
+            label="Tidy my words"
+            icon="create-outline"
+            variant="secondary"
+            onPress={polish}
+            loading={polishing}
+            disabled={!note.trim() || generating}
             flex
           />
         </View>
@@ -389,7 +433,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
-  aiRow: { flexDirection: 'row', marginBottom: Spacing.lg },
+  aiRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.lg },
   linked: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   suggestion: {
     flexDirection: 'row',
