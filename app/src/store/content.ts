@@ -56,6 +56,10 @@ export function useContent(): Content {
     const scrapbooks = merge(base.scrapbooks, userScrapbooks, (s, seed) => ({
       ...s,
       cover: keepSeedPhoto(seed?.cover, s.cover),
+      media: s.media.map((m) => {
+        const seedPhoto = seed?.media.find((x) => x.id === m.id)?.photo;
+        return { ...m, photo: keepSeedPhoto(seedPhoto, m.photo) ?? m.photo };
+      }),
     }));
     const users = live ? api.users : seedContent.users;
 

@@ -8,18 +8,18 @@ import type { ScrapbookItem } from '@/lib/feed';
 import { openScrapbook } from '@/lib/navigation';
 import { Colors, Fonts, Radius, Spacing } from '@/theme/tokens';
 
-/** Horizontal-carousel tile for a themed collection (scrapbook). */
-export function CollectionTile({ item, width }: { item: ScrapbookItem; width: number }) {
+/** Horizontal-carousel tile for a scrapbook. */
+export function ScrapbookTile({ item, width }: { item: ScrapbookItem; width: number }) {
   return (
     <PressableScale
       accessibilityRole="button"
-      accessibilityLabel={`Collection: ${item.scrapbook.title}, ${item.stops.length} places`}
+      accessibilityLabel={`Scrapbook: ${item.scrapbook.title}, ${item.media.length} photos`}
       onPress={() => openScrapbook(item.scrapbook.id)}
       style={[styles.tile, { width }]}>
       <View style={styles.photoWrap}>
         <PhotoView photo={item.cover} aspect={1.2} style={styles.photo} />
         <View style={styles.count}>
-          <AppText style={styles.countText}>{item.stops.length} places</AppText>
+          <AppText style={styles.countText}>{item.media.length} photos</AppText>
         </View>
       </View>
       <AppText variant="subheading" numberOfLines={2}>

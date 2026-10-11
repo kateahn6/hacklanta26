@@ -8,14 +8,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapMarker } from '@/components/map/map-marker';
 import { PlacePreviewCard } from '@/components/map/place-preview-card';
 import { AppText } from '@/components/ui/app-text';
-import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CategoryChips } from '@/components/ui/category-chips';
 import { IconButton } from '@/components/ui/icon-button';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
-import { CITY_REGION, DEMO_USER_ID } from '@/data/content-source';
+import { CITY_REGION } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
+import { scrapbookPlaceIds } from '@/lib/feed';
 import { buildMapPlaces, filterMapPlaces, type MapPlace } from '@/lib/map-places';
 import { notedMapStyle } from '@/lib/map-style';
 import { useContent } from '@/store/content';
@@ -23,11 +23,11 @@ import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 import type { CategoryId, Coordinate } from '@/types';
 
 const MAP_LOAD_TIMEOUT_MS = 12_000;
-const CARD_GAP = Spacing.md;
+const CARD_GAP = Spacing.sm;
 const PLACE_DELTA = 0.018;
 
 interface MapScreenProps {
-  /** Home tab: avatar and Ask Noted! instead of a back button, and the tab bar below. */
+  /** Home tab: no back button, and the tab bar below. */
   home?: boolean;
 }
 
@@ -48,16 +48,16 @@ export function MapScreen({ home = false }: MapScreenProps) {
   const [mapFailed, setMapFailed] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
 
-  const me = content.userById.get(DEMO_USER_ID);
   const scrapbook = scrapbookId ? content.scrapbookById.get(scrapbookId) : undefined;
   const allPlaces = buildMapPlaces(
     content,
     now,
-    scrapbook ? new Set(scrapbook.stops.map((s) => s.postcardId)) : undefined,
+    scrapbook ? scrapbookPlaceIds(scrapbook) : undefined,
   );
   const places = filterMapPlaces(allPlaces, category, query);
   const selectedIndex = places.findIndex((p) => p.place.id === selectedId);
-  const cardWidth = width - Gutter * 2 - 28;
+  // Narrow enough that the next card peeks in from the edge.
+  const cardWidth = Math.min(width * 0.74, 300);
 
   // A map that never reports ready (no tiles, missing config) gets an honest error state.
   useEffect(() => {
@@ -116,19 +116,12 @@ export function MapScreen({ home = false }: MapScreenProps) {
       style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}
       pointerEvents="box-none">
       <View style={styles.searchRow} pointerEvents="box-none">
-        {home ? (
-          me ? (
-            <PressableScale accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={4} onPress={() => router.push('/profile')} style={styles.avatar}>
-              <Avatar user={me} size={44} />
-            </PressableScale>
-          ) : null
-        ) : (
+        {home ? null : (
           <IconButton icon="arrow-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
         )}
         <View style={styles.flex}>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Search places or categories" compact />
         </View>
-        {home ? <IconButton icon="sparkles-outline" label="Ask Noted! for recommendations" onPress={() => router.push('/ask')} variant="cherry" /> : null}
       </View>
       {scrapbook ? (
         <View style={styles.scopeRow} pointerEvents="box-none">
@@ -244,7 +237,6 @@ const styles = StyleSheet.create({
   flexShrink: { flexShrink: 1 },
   center: { textAlign: 'center' },
   header: { position: 'absolute', top: 0, left: 0, right: 0, gap: Spacing.sm, zIndex: 5 },
-  avatar: { borderRadius: 22, boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
   scopeRow: { flexDirection: 'row', paddingHorizontal: Gutter },
   scope: {
@@ -258,7 +250,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.blackOlive,
   },
   chips: { marginHorizontal: 0 },
-  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: Spacing.md },
+  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: Spacing.sm },
   recenterRow: { alignItems: 'flex-end', paddingHorizontal: Gutter },
   cards: { gap: CARD_GAP, paddingHorizontal: Gutter },
   noResults: {

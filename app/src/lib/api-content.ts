@@ -99,21 +99,33 @@ export function useApiContent(): ApiContent {
         }
       }
 
-      // A place several people have written about reads as a shared scrapbook.
+      // A place several people have written about reads as a shared scrapbook,
+      // whose media is every photo they left there.
       if (apiPlace.entries.length > 1) {
         const first = apiPlace.entries[0];
-        scrapbooks.push({
-          id: `sb-${apiPlace.id}`,
-          title: apiPlace.name,
-          description: `${apiPlace.entries.length} entries from your friends.`,
-          city: 'Atlanta, GA',
-          authorId: apiPlace.created_by,
-          cover: first.photo_urls[0] ? { source: { uri: first.photo_urls[0] }, aspect: 0.8 } : null,
-          stops: apiPlace.entries.map((entry) => ({ postcardId: entry.id })),
-          visibility: 'public',
-          status: 'published',
-          createdAt: first.created_at,
-        });
+        const media = apiPlace.entries.flatMap((entry) =>
+          entry.photo_urls.map((uri, i) => ({
+            id: `${entry.id}-${i}`,
+            photo: { source: { uri }, aspect: 0.8 },
+            caption: entry.caption ?? undefined,
+            placeId: apiPlace.id,
+          }))
+        );
+        if (media.length > 0) {
+          scrapbooks.push({
+            id: `sb-${apiPlace.id}`,
+            title: apiPlace.name,
+            description: `${apiPlace.entries.length} entries from your friends.`,
+            city: 'Atlanta, GA',
+            authorId: apiPlace.created_by,
+            cover: media[0].photo,
+            categories: categoriesFor(apiPlace.entries),
+            media,
+            visibility: 'public',
+            status: 'published',
+            createdAt: first.created_at,
+          });
+        }
       }
 
       if (!users.has(apiPlace.created_by)) {

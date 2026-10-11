@@ -32,7 +32,7 @@ const OPTIONS: Option[] = [
   {
     icon: 'albums-outline',
     title: 'Create a scrapbook',
-    detail: 'Collect several places into a themed day or adventure.',
+    detail: 'Your photos around a theme, laid out like a mood board.',
     href: '/create/scrapbook',
     tone: Colors.sageSoft,
   },

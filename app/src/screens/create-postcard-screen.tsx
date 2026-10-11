@@ -26,7 +26,7 @@ import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
-import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus } from '@/types';
+import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus, Visibility } from '@/types';
 
 const NOTE_LIMIT = 200;
 /** Used when a new place has no picked coordinate: the demo city's centre. */
@@ -39,7 +39,6 @@ type Errors = Partial<Record<'photo' | 'place' | 'city' | 'note' | 'form', strin
 export function CreatePostcardScreen() {
   const params = useLocalSearchParams<{
     id?: string;
-    forScrapbook?: string;
     /** Set when the map sent us here with a dropped pin. */
     lat?: string;
     lng?: string;
@@ -49,8 +48,6 @@ export function CreatePostcardScreen() {
   const { refresh } = useData();
   const upsertPlace = useAppStore((s) => s.upsertPlace);
   const upsertPostcard = useAppStore((s) => s.upsertPostcard);
-  const addComposerStops = useAppStore((s) => s.addComposerStops);
-  const defaultVisibility = useAppStore((s) => s.defaultVisibility);
 
   const existing = params.id ? content.postcardById.get(params.id) : undefined;
   const editing = existing && isOwn(existing) ? existing : undefined;
@@ -62,7 +59,7 @@ export function CreatePostcardScreen() {
   const [city, setCity] = useState(existingPlace?.city ?? 'Atlanta');
   const [note, setNote] = useState(editing?.note ?? '');
   const [category, setCategory] = useState<CategoryId | null>(existingPlace?.categories[0] ?? null);
-  const [visibility, setVisibility] = useState(editing?.visibility ?? defaultVisibility);
+  const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [expiry, setExpiry] = useState<ExpiryOption>(editing?.expiryOption ?? 'never');
   const [errors, setErrors] = useState<Errors>({});
   const [tags, setTags] = useState<string[]>([]);
@@ -148,7 +145,7 @@ export function CreatePostcardScreen() {
 
     // A published postcard goes to the shared map. Drafts and scrapbook stops
     // stay on the device, which is what the local store is for.
-    if (status === 'published' && !params.forScrapbook && !editing) {
+    if (status === 'published' && !editing) {
       setSaving(true);
       setErrors({});
       try {
@@ -213,22 +210,13 @@ export function CreatePostcardScreen() {
     };
     upsertPostcard(postcard);
 
-    if (params.forScrapbook) {
-      addComposerStops([postcard.id]);
-      router.back();
-    } else {
-      router.replace({ pathname: '/postcard/[id]', params: { id: postcard.id, justPublished: '1' } });
-    }
+    router.replace({ pathname: '/postcard/[id]', params: { id: postcard.id, justPublished: '1' } });
   };
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar title={editing ? 'Edit postcard' : 'New postcard'} backIcon="close" />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {params.forScrapbook ? (
-          <Notice icon="albums-outline" message="This postcard will be added to the scrapbook you’re making." />
-        ) : null}
-
         <FormField label="Photo" error={errors.photo}>
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />
         </FormField>

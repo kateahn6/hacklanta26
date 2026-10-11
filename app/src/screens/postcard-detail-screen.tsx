@@ -10,14 +10,12 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { InfoTile } from '@/components/ui/info-tile';
 import { Notice } from '@/components/ui/notice';
 import { PhotoView } from '@/components/ui/photo-view';
-import { PressableScale } from '@/components/ui/pressable-scale';
 import { TopBar } from '@/components/ui/top-bar';
 import { categoryById } from '@/data/categories';
 import { useNow } from '@/hooks/use-now';
 import { toPostcardItem } from '@/lib/feed';
 import { formatDate } from '@/lib/format';
-import { openScrapbook } from '@/lib/navigation';
-import { canViewPostcard, canViewScrapbook, expiryLabel, isExpired, isOwn } from '@/lib/visibility';
+import { canViewPostcard, expiryLabel, isExpired, isOwn } from '@/lib/visibility';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 
@@ -46,9 +44,6 @@ export function PostcardDetailScreen() {
   }
 
   const own = isOwn(postcard);
-  const inScrapbooks = content.scrapbooks.filter(
-    (s) => canViewScrapbook(s) && s.stops.some((stop) => stop.postcardId === postcard.id),
-  );
   const coordinate = item.place.coordinate;
 
   return (
@@ -64,7 +59,7 @@ export function PostcardDetailScreen() {
                 ? 'Draft saved. Only you can see it until you publish.'
                 : postcard.visibility === 'public'
                   ? 'Published! It now appears in Explore, Discover, and on the map.'
-                  : 'Saved privately. Only you can see it, from your profile.'
+                  : 'Saved privately. Only you can see it, under Your posts in Discover.'
             }
           />
         ) : null}
@@ -145,24 +140,6 @@ export function PostcardDetailScreen() {
           ) : null}
         </View>
 
-        {inScrapbooks.length > 0 ? (
-          <View style={styles.section}>
-            <AppText variant="heading">Part of</AppText>
-            {inScrapbooks.map((s) => (
-              <PressableScale
-                key={s.id}
-                accessibilityRole="button"
-                accessibilityLabel={`Open scrapbook ${s.title}`}
-                onPress={() => openScrapbook(s.id)}
-                style={styles.scrapbookLink}>
-                <AppText variant="label" style={styles.flex} numberOfLines={1}>
-                  {s.title}
-                </AppText>
-                <AppText variant="caption">{s.stops.length} places</AppText>
-              </PressableScale>
-            ))}
-          </View>
-        ) : null}
       </ScrollView>
     </View>
   );
@@ -193,14 +170,4 @@ const styles = StyleSheet.create({
   signature: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   tiles: { flexDirection: 'row', gap: Spacing.sm },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  section: { gap: Spacing.sm, marginTop: Spacing.sm },
-  scrapbookLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    minHeight: 48,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
-  },
 });

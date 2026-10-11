@@ -13,11 +13,11 @@ export interface MapPlace {
 }
 
 /** Places that have a location and at least one visible, published postcard. */
-export function buildMapPlaces(content: Content, now: number, onlyPostcardIds?: Set<string>): MapPlace[] {
+export function buildMapPlaces(content: Content, now: number, onlyPlaceIds?: Set<string>): MapPlace[] {
   const byPlace = new Map<string, PostcardItem[]>();
   for (const postcard of content.postcards) {
     if (postcard.status !== 'published' || !canViewPostcard(postcard, now)) continue;
-    if (onlyPostcardIds && !onlyPostcardIds.has(postcard.id)) continue;
+    if (onlyPlaceIds && !onlyPlaceIds.has(postcard.placeId)) continue;
     const item = toPostcardItem(content, postcard);
     if (!item) continue;
     byPlace.set(postcard.placeId, [...(byPlace.get(postcard.placeId) ?? []), item]);
