@@ -1,4 +1,4 @@
--- Drops everything Unfold owns. Run before schema.sql to start clean.
+-- Drops everything noted! owns. Run before schema.sql to start clean.
 drop materialized view if exists daily_place_visits cascade;
 drop table if exists visits cascade;
 drop table if exists entries cascade;

@@ -1,4 +1,4 @@
--- Unfold: tables and the visits hypertable.
+-- noted!: tables and the visits hypertable.
 -- Run with:  psql "$DATABASE_URL" -f sql/schema.sql
 -- Then run aggregates.sql, then seed.sql. See sql/README.md.
 -- Re-runnable: every statement is IF NOT EXISTS.

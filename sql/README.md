@@ -1,4 +1,4 @@
-# Unfold database
+# noted! database
 
 Run these **in order**, each as its own `psql` invocation. `psql -f` runs in
 autocommit, which matters: a continuous aggregate cannot be created inside a

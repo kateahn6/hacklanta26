@@ -1,4 +1,4 @@
--- Unfold: the continuous aggregate behind "friends keep coming back".
+-- noted!: the continuous aggregate behind "friends keep coming back".
 -- Run with:  psql "$DATABASE_URL" -f sql/aggregates.sql
 --
 -- IMPORTANT: a continuous aggregate cannot be created inside a transaction

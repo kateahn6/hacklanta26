@@ -1,4 +1,4 @@
--- Unfold demo seed: one city (Atlanta), three friends, repeat visits.
+-- noted! demo seed: one city (Atlanta), three friends, repeat visits.
 -- Run with:  psql "$DATABASE_URL" -f sql/seed.sql
 -- Re-running is safe: it deletes the demo users' data first.
 -- Run AFTER schema.sql and aggregates.sql.
@@ -11,9 +11,9 @@ begin;
 delete from users where id in ('google-oauth2|900000000000000000101', 'google-oauth2|900000000000000000102', 'google-oauth2|900000000000000000103');
 
 insert into users (id, name, email, avatar_url, is_demo) values
-  ('google-oauth2|900000000000000000101', 'Maya Okonkwo (demo)', 'maya.demo@unfold.app', 'https://i.pravatar.cc/200?img=47', true),
-  ('google-oauth2|900000000000000000102', 'Theo Alvarez (demo)', 'theo.demo@unfold.app', 'https://i.pravatar.cc/200?img=12', true),
-  ('google-oauth2|900000000000000000103', 'Ren Fujita (demo)', 'ren.demo@unfold.app', 'https://i.pravatar.cc/200?img=33', true);
+  ('google-oauth2|900000000000000000101', 'Maya Okonkwo (demo)', 'maya.demo@noted.app', 'https://i.pravatar.cc/200?img=47', true),
+  ('google-oauth2|900000000000000000102', 'Theo Alvarez (demo)', 'theo.demo@noted.app', 'https://i.pravatar.cc/200?img=12', true),
+  ('google-oauth2|900000000000000000103', 'Ren Fujita (demo)', 'ren.demo@noted.app', 'https://i.pravatar.cc/200?img=33', true);
 
 -- Friendships are symmetric: both directions are stored.
 insert into friendships (user_id, friend_id) values
