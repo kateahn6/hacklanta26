@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { DEV_SKIP_AUTH } from '@/lib/config';
 import { DataProvider } from '@/lib/data';
 import { FontAssets } from '@/theme/fonts';
 import { Colors } from '@/theme/tokens';
@@ -28,6 +29,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!ready) return;
+    // EXPO_PUBLIC_DEV_SKIP_AUTH=1 runs the UI on seed content without Auth0.
+    if (DEV_SKIP_AUTH) {
+      if (onLogin) router.replace('/');
+      return;
+    }
     if (!session && !onLogin) router.replace('/login');
     if (session && onLogin) router.replace('/');
   }, [onLogin, ready, session]);

@@ -28,3 +28,10 @@ export const API_URL = (
 ).replace(/\/$/, '');
 
 export const AUTH0_ISSUER = AUTH0_DOMAIN ? `https://${AUTH0_DOMAIN}` : '';
+
+/**
+ * Dev-only escape hatch: lets the app past the login gate with no Auth0 set up,
+ * so the UI can be run on the bundled seed content. Every API call still needs
+ * a real token, so nothing reaches the server in this mode.
+ */
+export const DEV_SKIP_AUTH = process.env.EXPO_PUBLIC_DEV_SKIP_AUTH === '1';
