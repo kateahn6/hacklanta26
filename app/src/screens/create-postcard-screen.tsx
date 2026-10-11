@@ -9,6 +9,7 @@ import { PreviewModal } from '@/components/create/preview-modal';
 import { PhotoPickerField } from '@/components/create/photo-picker-field';
 import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
+import { BusyOverlay } from '@/components/ui/busy-overlay';
 import { Button } from '@/components/ui/button';
 import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
@@ -68,6 +69,7 @@ export function CreatePostcardScreen() {
   const [postcardText, setPostcardText] = useState('');
   const [generating, setGenerating] = useState(false);
   const [polishing, setPolishing] = useState(false);
+  const [polishedNothing, setPolishedNothing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
@@ -144,6 +146,7 @@ export function CreatePostcardScreen() {
     }
     setPolishing(true);
     setErrors({});
+    setPolishedNothing(false);
     try {
       const token = await getAccessToken();
       const page = await api<ScrapbookPage>('/api/polish', {
@@ -158,6 +161,8 @@ export function CreatePostcardScreen() {
       if (page.postcard_text) setPostcardText(page.postcard_text);
       if (page.place_type && !placeName.trim()) setPlaceName(page.place_type);
       setAiSource(page.source ?? null);
+      // The fallback echoes the text back, so say so rather than looking inert.
+      setPolishedNothing(page.source === 'demo');
     } catch (err: any) {
       setErrors({ form: err?.message ?? 'Gemini could not rewrite that.' });
     } finally {
@@ -272,6 +277,20 @@ export function CreatePostcardScreen() {
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar title={editing ? 'Edit postcard' : 'New postcard'} backIcon="close" />
+
+      {generating ? (
+        <BusyOverlay
+          title="Reading your photo…"
+          patienceNote="Gemini is writing the page. This can take up to 20 seconds."
+        />
+      ) : null}
+      {polishing ? (
+        <BusyOverlay
+          title="Tidying your words…"
+          patienceNote="Keeping your meaning, fixing the rest. This can take up to 20 seconds."
+        />
+      ) : null}
+      {saving ? <BusyOverlay title="Saving to the shared map…" /> : null}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <FormField label="Photo" error={errors.photo}>
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />
@@ -308,6 +327,13 @@ export function CreatePostcardScreen() {
           <Notice
             icon="sparkles"
             message="Gemini drafted the note and tags from your photo. Edit anything before publishing."
+          />
+        ) : null}
+        {polishedNothing ? (
+          <Notice
+            icon="time-outline"
+            tone="slate"
+            message="Gemini took too long, so your words were left exactly as you wrote them. Try again, or just publish as is."
           />
         ) : null}
         {errors.form ? <Notice icon="warning-outline" tone="navy" message={errors.form} /> : null}
