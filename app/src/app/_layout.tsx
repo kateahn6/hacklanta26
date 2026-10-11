@@ -1,32 +1,72 @@
-import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
+import { DefaultTheme, Stack, ThemeProvider, router, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useEffect } from 'react';
 
-import { C } from '@/constants/theme';
-import { AuthProvider } from '@/lib/auth';
+import { AuthProvider, useAuth } from '@/lib/auth';
 import { DataProvider } from '@/lib/data';
+import { FontAssets } from '@/theme/fonts';
+import { Colors } from '@/theme/tokens';
+
+SplashScreen.preventAutoHideAsync();
+
+// Noted! uses one warm light palette in every system appearance.
+const theme = {
+  ...DefaultTheme,
+  colors: { ...DefaultTheme.colors, background: Colors.cream, card: Colors.paper, primary: Colors.cherry, text: Colors.softBlack },
+};
+
+/**
+ * Keeps the signed-out user on /login and the signed-in user off it. Lives
+ * inside AuthProvider because it reads the session.
+ */
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { ready, session } = useAuth();
+  const segments = useSegments();
+  const onLogin = segments[0] === 'login';
+
+  useEffect(() => {
+    if (!ready) return;
+    if (!session && !onLogin) router.replace('/login');
+    if (session && onLogin) router.replace('/');
+  }, [onLogin, ready, session]);
+
+  return <>{children}</>;
+}
 
 export default function RootLayout() {
+  const [fontsLoaded, fontError] = useFonts(FontAssets);
+  const ready = fontsLoaded || fontError !== null;
+
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
+
   return (
-    <SafeAreaProvider>
-      <AuthProvider>
-        <DataProvider>
-          <StatusBar style="dark" />
-          {/* Headers are off: every screen draws the prototype's own detailTop row. */}
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              animation: 'fade',
-              contentStyle: { backgroundColor: C.cream },
-            }}>
-            <Stack.Screen name="index" />
+    <AuthProvider>
+      {/* DataProvider holds the live API content every screen reads via useContent. */}
+      <DataProvider>
+        <ThemeProvider value={theme}>
+          <AuthGate>
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: Colors.cream } }}>
             <Stack.Screen name="login" />
-            <Stack.Screen name="new-entry" options={{ animation: 'slide_from_bottom' }} />
-            <Stack.Screen name="share" options={{ animation: 'slide_from_bottom' }} />
-            <Stack.Screen name="postcard" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="map" />
+            <Stack.Screen name="postcard/[id]" />
+            <Stack.Screen name="scrapbook/[id]" />
+            <Stack.Screen name="profile" />
+            <Stack.Screen name="ask" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="create/postcard" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="create/scrapbook" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="create/pick-postcards" options={{ animation: 'slide_from_bottom' }} />
           </Stack>
-        </DataProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+          </AuthGate>
+          <StatusBar style="dark" />
+        </ThemeProvider>
+      </DataProvider>
+    </AuthProvider>
   );
 }
