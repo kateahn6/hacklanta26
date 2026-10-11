@@ -27,7 +27,7 @@ const CARD_GAP = Spacing.md;
 const PLACE_DELTA = 0.018;
 
 interface MapScreenProps {
-  /** Home tab: avatar and Ask Noted! instead of a back button, and the tab bar below. */
+  /** Home tab: profile avatar instead of a back button, and the tab bar below. */
   home?: boolean;
 }
 
@@ -128,7 +128,6 @@ export function MapScreen({ home = false }: MapScreenProps) {
         <View style={styles.flex}>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Search places or categories" compact />
         </View>
-        {home ? <IconButton icon="sparkles-outline" label="Ask Noted! for recommendations" onPress={() => router.push('/ask')} variant="cherry" /> : null}
       </View>
       {scrapbook ? (
         <View style={styles.scopeRow} pointerEvents="box-none">

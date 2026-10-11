@@ -69,18 +69,3 @@ export interface Scrapbook {
   createdAt: string;
   featured?: boolean;
 }
-
-export interface Recommendation {
-  placeId: string;
-  reason: string;
-  postcardId?: string;
-  scrapbookId?: string;
-}
-
-export interface RecommendationResult {
-  prompt: string;
-  summary: string;
-  items: Recommendation[];
-  /** 'sample' until a backend endpoint calls Gemini. */
-  source: 'sample';
-}
