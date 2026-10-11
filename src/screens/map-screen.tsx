@@ -23,7 +23,7 @@ import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
 import type { CategoryId, Coordinate } from '@/types';
 
 const MAP_LOAD_TIMEOUT_MS = 12_000;
-const CARD_GAP = Spacing.md;
+const CARD_GAP = Spacing.sm;
 const PLACE_DELTA = 0.018;
 
 interface MapScreenProps {
@@ -57,7 +57,8 @@ export function MapScreen({ home = false }: MapScreenProps) {
   );
   const places = filterMapPlaces(allPlaces, category, query);
   const selectedIndex = places.findIndex((p) => p.place.id === selectedId);
-  const cardWidth = width - Gutter * 2 - 28;
+  // Narrow enough that the next card peeks in from the edge.
+  const cardWidth = Math.min(width * 0.74, 300);
 
   // A map that never reports ready (no tiles, missing config) gets an honest error state.
   useEffect(() => {
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.blackOlive,
   },
   chips: { marginHorizontal: 0 },
-  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: Spacing.md },
+  bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, gap: Spacing.sm },
   recenterRow: { alignItems: 'flex-end', paddingHorizontal: Gutter },
   cards: { gap: CARD_GAP, paddingHorizontal: Gutter },
   noResults: {
