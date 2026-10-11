@@ -40,7 +40,7 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={[s.page, { flexGrow: 1, justifyContent: 'center' }]}>
         <Text style={s.eyebrow}>ATLANTA, GEORGIA</Text>
         <Text style={s.logo}>
-          unfold<Text style={s.logoBang}>!</Text>
+          noted<Text style={s.logoBang}>!</Text>
         </Text>
         <Text style={s.heroTitle}>Real places, real people.</Text>
         <Text style={s.heroCopy}>

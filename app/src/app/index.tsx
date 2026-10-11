@@ -199,7 +199,7 @@ export default function HomeScreen() {
             setMode('gallery');
           }}>
           <Text style={s.logo}>
-            unfold<Text style={s.logoBang}>!</Text>
+            noted<Text style={s.logoBang}>!</Text>
           </Text>
         </Pressable>
         <Text style={s.topTag}>REAL PLACES, REAL PEOPLE</Text>

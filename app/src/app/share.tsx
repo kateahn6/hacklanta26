@@ -123,7 +123,7 @@ export default function ShareScreen() {
                 label="Share…"
                 onPress={() =>
                   Share.share({
-                    message: `Join my Unfold map — open the app and enter code ${code}`,
+                    message: `Join my noted map — open the app and enter code ${code}`,
                   })
                 }
               />

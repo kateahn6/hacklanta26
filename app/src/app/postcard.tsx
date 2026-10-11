@@ -64,7 +64,7 @@ export default function PostcardScreen() {
               paddingVertical: 4,
             }}>
             <Text style={{ color: C.paper, fontSize: 10, fontWeight: '900', letterSpacing: 3 }}>
-              UNFOLD
+              NOTED
             </Text>
           </View>
 
@@ -99,7 +99,7 @@ export default function PostcardScreen() {
         <ActionButton
           label="Send this postcard"
           onPress={() =>
-            Share.share({ message: `${message}\n\n— from ${place.name}, via Unfold` })
+            Share.share({ message: `${message}\n\n— from ${place.name}, via noted` })
           }
         />
       </View>
