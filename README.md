@@ -15,6 +15,11 @@ api/   Node + Express + TypeScript API
 sql/   Tiger Data (Postgres/TimescaleDB) schema, aggregate and seed
 ```
 
+**New to the repo?** Read [WORKING-AGREEMENT.md](WORKING-AGREEMENT.md) first —
+the Expo project moved into `app/`, and there are a few traps (`.env` needs
+`expo start -c`, the Auth0 callback URL changes with the tunnel) that are
+quicker to read about than to debug.
+
 ## 1. Database (Tiger Data)
 
 Each file as its own `psql` run — a continuous aggregate cannot be created
