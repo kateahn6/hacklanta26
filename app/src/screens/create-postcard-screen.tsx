@@ -14,6 +14,7 @@ import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
@@ -236,7 +237,11 @@ export function CreatePostcardScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <TopBar title={editing ? 'Edit postcard' : 'New postcard'} backIcon="close" />
+      <TopBar
+        title={editing ? 'Edit postcard' : 'New postcard'}
+        backIcon="close"
+        right={editing ? <DeleteButton kind="postcard" id={editing.id} /> : null}
+      />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <FormField label="Photo" error={errors.photo}>
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />

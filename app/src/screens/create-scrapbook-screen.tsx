@@ -10,11 +10,13 @@ import { PhotoPickerField } from '@/components/create/photo-picker-field';
 import { ScrapbookView } from '@/components/scrapbook/scrapbook-view';
 import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
 import { DEMO_USER_ID } from '@/data/content-source';
 import { newId } from '@/lib/format';
+import { useDeletePost } from '@/lib/use-delete-post';
 import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
@@ -32,6 +34,7 @@ export function CreateScrapbookScreen() {
 
   const existing = params.id ? content.scrapbookById.get(params.id) : undefined;
   const editing = existing && isOwn(existing) ? existing : undefined;
+  const { isSharedScrapbook } = useDeletePost();
 
   const [title, setTitle] = useState(editing?.title ?? '');
   const [description, setDescription] = useState(editing?.description ?? '');
@@ -82,7 +85,11 @@ export function CreateScrapbookScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <TopBar title={editing ? 'Edit scrapbook' : 'New scrapbook'} backIcon="close" />
+      <TopBar
+        title={editing ? 'Edit scrapbook' : 'New scrapbook'}
+        backIcon="close"
+        right={editing && !isSharedScrapbook(editing.id) ? <DeleteButton kind="scrapbook" id={editing.id} /> : null}
+      />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <FormField label="Title" error={errors.title}>
           <TextBox

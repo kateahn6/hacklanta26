@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 
+import { DEMO_USER_ID } from '@/data/content-source';
+import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
 import type { Entry, Place as ApiPlace, ReturningPlace } from '@/lib/types';
 import type { CategoryId, Place, Postcard, Scrapbook, User } from '@/types';
@@ -41,12 +43,19 @@ function toPlace(place: ApiPlace): Place {
   };
 }
 
-function toPostcard(entry: Entry, placeId: string): Postcard {
+/**
+ * The rest of the app recognizes the signed-in person by DEMO_USER_ID (seed
+ * data, device-local posts, isOwn). Their API rows are mapped onto it so "your
+ * posts", editing, and deleting work the same with live data.
+ */
+const asAuthor = (userId: string, me: string | undefined) => (me && userId === me ? DEMO_USER_ID : userId);
+
+function toPostcard(entry: Entry, placeId: string, me: string | undefined): Postcard {
   const photo = entry.photo_urls[0];
   return {
     id: entry.id,
     placeId,
-    authorId: entry.user_id,
+    authorId: asAuthor(entry.user_id, me),
     // Remote URLs and base64 data URLs both work as { uri }.
     photo: photo ? { source: { uri: photo }, aspect: 0.8 } : null,
     note: entry.story ?? entry.caption ?? '',
@@ -77,6 +86,9 @@ export interface ApiContent {
 
 export function useApiContent(): ApiContent {
   const { places: apiPlaces, returning, loading, error } = useData();
+  const { profile } = useAuth();
+  const me = profile?.sub;
+  const myName = profile?.name;
 
   return useMemo(() => {
     const places: Place[] = [];
@@ -88,10 +100,11 @@ export function useApiContent(): ApiContent {
       places.push(toPlace(apiPlace));
 
       for (const entry of apiPlace.entries) {
-        postcards.push(toPostcard(entry, apiPlace.id));
-        if (!users.has(entry.user_id)) {
-          users.set(entry.user_id, {
-            id: entry.user_id,
+        postcards.push(toPostcard(entry, apiPlace.id, me));
+        const authorId = asAuthor(entry.user_id, me);
+        if (!users.has(authorId)) {
+          users.set(authorId, {
+            id: authorId,
             name: entry.user_name ?? 'A friend',
             handle: handleFor(entry.user_name, entry.user_id),
             neighborhood: 'Atlanta',
@@ -117,7 +130,7 @@ export function useApiContent(): ApiContent {
             title: apiPlace.name,
             description: `${apiPlace.entries.length} entries from your friends.`,
             city: 'Atlanta, GA',
-            authorId: apiPlace.created_by,
+            authorId: asAuthor(apiPlace.created_by, me),
             cover: media[0].photo,
             categories: categoriesFor(apiPlace.entries),
             media,
@@ -128,9 +141,10 @@ export function useApiContent(): ApiContent {
         }
       }
 
-      if (!users.has(apiPlace.created_by)) {
-        users.set(apiPlace.created_by, {
-          id: apiPlace.created_by,
+      const creatorId = asAuthor(apiPlace.created_by, me);
+      if (!users.has(creatorId)) {
+        users.set(creatorId, {
+          id: creatorId,
           name: apiPlace.created_by_name ?? 'A friend',
           handle: handleFor(apiPlace.created_by_name, apiPlace.created_by),
           neighborhood: 'Atlanta',
@@ -139,6 +153,16 @@ export function useApiContent(): ApiContent {
     }
 
     postcards.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+    // Always know who "you" are, even before your first post, so create and preview have an author.
+    if (me && !users.has(DEMO_USER_ID)) {
+      users.set(DEMO_USER_ID, {
+        id: DEMO_USER_ID,
+        name: myName ?? 'You',
+        handle: handleFor(myName ?? null, me),
+        neighborhood: 'Atlanta',
+      });
+    }
 
     return {
       users: [...users.values()],
@@ -149,5 +173,5 @@ export function useApiContent(): ApiContent {
       loading,
       error,
     };
-  }, [apiPlaces, error, loading, returning]);
+  }, [apiPlaces, error, loading, me, myName, returning]);
 }

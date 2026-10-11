@@ -44,15 +44,17 @@ export function useContent(): Content {
   const userPlaces = useAppStore((s) => s.userPlaces);
   const userPostcards = useAppStore((s) => s.userPostcards);
   const userScrapbooks = useAppStore((s) => s.userScrapbooks);
+  const deletedIds = useAppStore((s) => s.deletedIds);
 
   return useMemo(() => {
     const live = api.places.length > 0;
     const base = live ? api : seedContent;
     const places = merge(base.places, userPlaces, (p) => p);
+    const deleted = new Set(deletedIds);
     const postcards = merge(base.postcards, userPostcards, (p, seed) => ({
       ...p,
       photo: keepSeedPhoto(seed?.photo, p.photo),
-    }));
+    })).filter((p) => !deleted.has(p.id));
     const scrapbooks = merge(base.scrapbooks, userScrapbooks, (s, seed) => ({
       ...s,
       cover: keepSeedPhoto(seed?.cover, s.cover),
@@ -60,7 +62,7 @@ export function useContent(): Content {
         const seedPhoto = seed?.media.find((x) => x.id === m.id)?.photo;
         return { ...m, photo: keepSeedPhoto(seedPhoto, m.photo) ?? m.photo };
       }),
-    }));
+    })).filter((s) => !deleted.has(s.id));
     const users = live ? api.users : seedContent.users;
 
     return {
@@ -73,5 +75,5 @@ export function useContent(): Content {
       postcardById: new Map(postcards.map((p) => [p.id, p])),
       scrapbookById: new Map(scrapbooks.map((s) => [s.id, s])),
     };
-  }, [api, userPlaces, userPostcards, userScrapbooks]);
+  }, [api, deletedIds, userPlaces, userPostcards, userScrapbooks]);
 }

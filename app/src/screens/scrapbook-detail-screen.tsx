@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBadges } from '@/components/cards/status-badges';
 import { ScrapbookView } from '@/components/scrapbook/scrapbook-view';
 import { Button } from '@/components/ui/button';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Notice } from '@/components/ui/notice';
 import { TopBar } from '@/components/ui/top-bar';
 import { useNow } from '@/hooks/use-now';
 import { scrapbookPlaceIds, toScrapbookItem } from '@/lib/feed';
+import { useDeletePost } from '@/lib/use-delete-post';
 import { canViewScrapbook, isOwn } from '@/lib/visibility';
 import { useContent } from '@/store/content';
 import { Colors, Spacing } from '@/theme/tokens';
@@ -19,6 +21,7 @@ export function ScrapbookDetailScreen() {
   const insets = useSafeAreaInsets();
   const content = useContent();
   const now = useNow();
+  const { isSharedScrapbook } = useDeletePost();
   const scrapbook = content.scrapbookById.get(id);
 
   if (!scrapbook || !canViewScrapbook(scrapbook)) {
@@ -38,6 +41,7 @@ export function ScrapbookDetailScreen() {
 
   const item = toScrapbookItem(content, scrapbook);
   const own = isOwn(scrapbook);
+  const canDelete = own && !isSharedScrapbook(scrapbook.id);
   const hasMapPlaces = [...scrapbookPlaceIds(scrapbook)].some((placeId) => content.placeById.get(placeId)?.coordinate);
 
   return (
@@ -92,7 +96,7 @@ export function ScrapbookDetailScreen() {
           }
         />
       </ScrollView>
-      <TopBar floating />
+      <TopBar floating right={canDelete ? <DeleteButton kind="scrapbook" id={scrapbook.id} floating /> : null} />
     </View>
   );
 }

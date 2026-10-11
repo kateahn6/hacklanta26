@@ -6,6 +6,7 @@ import { StatusBadges } from '@/components/cards/status-badges';
 import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
 import { Button } from '@/components/ui/button';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InfoTile } from '@/components/ui/info-tile';
 import { Notice } from '@/components/ui/notice';
@@ -46,7 +47,7 @@ export function PostcardDetailScreen() {
 
   return (
     <View style={styles.screen}>
-      <TopBar />
+      <TopBar right={own ? <DeleteButton kind="postcard" id={postcard.id} /> : null} />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + Spacing.xxxl }]}>
         {justPublished ? (
           <Notice
