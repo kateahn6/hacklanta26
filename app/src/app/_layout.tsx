@@ -1,18 +1,35 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { Colors } from '@/constants/theme';
+import { AuthProvider } from '@/lib/auth';
+import { DataProvider } from '@/lib/data';
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <DataProvider>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: Colors.paper },
+              headerTitleStyle: { color: Colors.ink },
+              headerTintColor: Colors.accent,
+              contentStyle: { backgroundColor: Colors.paper },
+            }}>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="new-entry" options={{ title: 'New scrapbook entry' }} />
+            <Stack.Screen name="share" options={{ title: 'Share this map' }} />
+            <Stack.Screen
+              name="postcard"
+              options={{ title: 'Postcard', presentation: 'modal' }}
+            />
+          </Stack>
+        </DataProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }

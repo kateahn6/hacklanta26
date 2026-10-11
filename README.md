@@ -1,56 +1,77 @@
-# Welcome to your Expo app 👋
+# Unfold
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Community discovery through scrapbook entries instead of ratings. Friends share
+real places, Gemini writes the page from the photos, and the ranking is built on
+one signal only: who keeps coming back.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+app/   Expo (SDK 57, TypeScript) — runs in Expo Go
+api/   Node + Express + TypeScript API
+sql/   Tiger Data (Postgres/TimescaleDB) schema, aggregate and seed
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 1. Database (Tiger Data)
 
-### Other setup steps
+Each file as its own `psql` run — a continuous aggregate cannot be created
+inside a transaction. See [sql/README.md](sql/README.md).
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+export DATABASE_URL='postgres://...sslmode=require'
+psql "$DATABASE_URL" -f sql/schema.sql
+psql "$DATABASE_URL" -f sql/aggregates.sql
+psql "$DATABASE_URL" -f sql/seed.sql
+```
 
-## Learn more
+## 2. API
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+cd api
+cp .env.example .env     # AUTH0_DOMAIN, AUTH0_AUDIENCE, DATABASE_URL, GEMINI_API_KEY, DEMO_MODE
+npm install
+npm run dev              # listens on PORT (default 8787)
+curl localhost:8787/health
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+The phone cannot reach `localhost`, so expose the port:
 
-## Join the community
+```bash
+ngrok http 8787          # or: cloudflared tunnel --url http://localhost:8787
+```
 
-Join our community of developers creating universal apps.
+## 3. Auth0
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+One **API** (identifier = `AUTH0_AUDIENCE`, e.g. `https://unfold-api`, with
+Allow Offline Access on) and one **Native application** using Authorization
+Code + PKCE, with Google as a social connection. The app prints its redirect
+URI to the Expo terminal and shows it on the login screen — paste that into
+Allowed Callback URLs. In Expo Go it looks like
+`exp://192.168.1.20:8081/--/redirect` and changes with your network.
+
+## 4. App
+
+```bash
+cd app
+cp .env.example .env     # EXPO_PUBLIC_AUTH0_*, EXPO_PUBLIC_API_URL=<tunnel URL>
+npm install
+npx expo start -c        # -c after any .env change
+```
+
+## Demo path
+
+Log in with Google → Share → **Join the demo map** (befriends the three seeded
+Atlanta accounts) → pins appear → press and hold the map to drop a pin → pick
+photos → *Let Gemini write the page* → save → toggle **Friends keep returning**
+(green pins; Hodgepodge Coffee wins) → tap a pin → **Send as postcard**.
+
+## Choices worth knowing
+
+- **Photos are base64 JPEG data URLs**, resized to ~1024px on the phone and
+  stored in `entries.photo_urls`. No blob store to configure; swap for Vercel
+  Blob if payload size becomes a problem.
+- **`DEMO_MODE=1`** makes `/api/analyze` return a canned scrapbook page if
+  Gemini fails or takes longer than 8 seconds. The UI says when it did.
+- **Friendships are symmetric**, written in both directions on accept, so every
+  read is a plain equality join.
+- **The friendship join stays out of the continuous aggregate** —
+  `daily_place_visits` buckets visits by place, person and day, and
+  `GET /api/returning` joins `friendships` on top of it.

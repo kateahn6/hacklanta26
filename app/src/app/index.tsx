@@ -1,98 +1,246 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker, type LongPressEvent } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { PlaceSheet } from '@/components/place-sheet';
+import { Banner } from '@/components/ui';
+import { Colors, DEMO_REGION, Radius, Spacing } from '@/constants/theme';
+import { useAuth } from '@/lib/auth';
+import { useData } from '@/lib/data';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
+export default function MapScreen() {
+  const { ready, session, profile, signOut } = useAuth();
+  const { places, returning, loading, error, refresh } = useData();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showReturning, setShowReturning] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (ready && !session) router.replace('/login');
+    }, [ready, session])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (session) refresh();
+      // Re-reads places and the returning ranking every time the map comes back
+      // into focus, so a new entry shows up immediately.
+    }, [refresh, session])
+  );
+
+  const returningById = useMemo(
+    () => new Map(returning.map((r) => [r.id, r])),
+    [returning]
+  );
+  const selected = places.find((p) => p.id === selectedId) ?? null;
+  const top = returning[0];
+
+  const onLongPress = (event: LongPressEvent) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    setSelectedId(null);
+    router.push({
+      pathname: '/new-entry',
+      params: { lat: String(latitude), lng: String(longitude) },
+    });
+  };
+
+  if (!ready) {
     return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+      <View style={styles.loading}>
+        <ActivityIndicator color={Colors.accent} />
+      </View>
     );
   }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.root}>
+      <MapView
+        style={styles.map}
+        initialRegion={DEMO_REGION}
+        onLongPress={onLongPress}
+        onPress={() => setSelectedId(null)}>
+        {places.map((place) => {
+          const rank = returningById.get(place.id);
+          const highlight = showReturning && !!rank && rank.return_days > 0;
+          return (
+            <Marker
+              key={place.id}
+              coordinate={{ latitude: Number(place.lat), longitude: Number(place.lng) }}
+              title={place.name}
+              description={
+                highlight
+                  ? `${rank.return_days} return days among friends`
+                  : `${place.entries.length} entries`
+              }
+              pinColor={highlight ? Colors.returning : Colors.accent}
+              onPress={(e) => {
+                e.stopPropagation();
+                setSelectedId(place.id);
+              }}
+            />
+          );
+        })}
+      </MapView>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <SafeAreaView style={styles.topBar} pointerEvents="box-none">
+        <View style={styles.topRow}>
+          <View style={styles.brandCard}>
+            <Text style={styles.brand}>Unfold</Text>
+            <Text style={styles.who}>{profile.name ?? profile.email ?? 'Signed in'}</Text>
+          </View>
+          <Pressable style={styles.iconButton} onPress={() => router.push('/share')}>
+            <Text style={styles.iconLabel}>Share</Text>
+          </Pressable>
+          <Pressable style={styles.iconButton} onPress={signOut}>
+            <Text style={styles.iconLabel}>Sign out</Text>
+          </Pressable>
+        </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <Pressable
+          style={[styles.toggle, showReturning && styles.toggleOn]}
+          onPress={() => setShowReturning((v) => !v)}>
+          <Text style={[styles.toggleLabel, showReturning && styles.toggleLabelOn]}>
+            {showReturning ? '● Friends keep returning' : '○ Friends keep returning'}
+          </Text>
+        </Pressable>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+        {showReturning && top ? (
+          <View style={styles.rank}>
+            <Text style={styles.rankTitle}>
+              #1 {top.name} · {top.return_days} return days
+            </Text>
+            <Text style={styles.rankBody}>
+              {top.repeat_friends} of {top.friend_count} friends went back. Green pins are the
+              places your circle returns to.
+            </Text>
+          </View>
+        ) : null}
 
-        {Platform.OS === 'web' && <WebBadge />}
+        {error ? <Banner text={error} /> : null}
+        {loading ? (
+          <View style={styles.loadingPill}>
+            <ActivityIndicator color={Colors.accent} size="small" />
+            <Text style={styles.loadingText}>Loading the shared map…</Text>
+          </View>
+        ) : null}
       </SafeAreaView>
-    </ThemedView>
+
+      {!selected && !loading && places.length === 0 ? (
+        <View style={styles.emptyBar}>
+          <Text style={styles.emptyTitle}>No pins on your map yet</Text>
+          <Text style={styles.emptyBody}>
+            Press and hold anywhere to drop your first pin — or open Share and tap
+            &ldquo;Join the demo map&rdquo; to see the seeded Atlanta places.
+          </Text>
+        </View>
+      ) : null}
+
+      {!selected && places.length > 0 ? (
+        <View style={styles.hintBar}>
+          <Text style={styles.hint}>Press and hold the map to drop a pin</Text>
+        </View>
+      ) : null}
+
+      {selected ? (
+        <PlaceSheet
+          place={selected}
+          returning={returningById.get(selected.id)}
+          onClose={() => setSelectedId(null)}
+          onAddEntry={() =>
+            router.push({
+              pathname: '/new-entry',
+              params: {
+                place_id: selected.id,
+                name: selected.name,
+                lat: String(selected.lat),
+                lng: String(selected.lng),
+              },
+            })
+          }
+          onPostcard={(entryId) =>
+            router.push({ pathname: '/postcard', params: { entry_id: entryId } })
+          }
+        />
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: { flex: 1, backgroundColor: Colors.paper },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.paper },
+  map: { flex: 1 },
+  topBar: { position: 'absolute', top: 0, left: 0, right: 0, padding: Spacing.md, gap: Spacing.sm },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  brandCard: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  brand: { fontSize: 18, fontWeight: '800', color: Colors.ink },
+  who: { fontSize: 12, color: Colors.inkSoft },
+  iconButton: {
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+  },
+  iconLabel: { fontSize: 13, fontWeight: '700', color: Colors.accent },
+  toggle: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  toggleOn: { backgroundColor: Colors.returning },
+  toggleLabel: { fontSize: 13, fontWeight: '700', color: Colors.inkSoft },
+  toggleLabelOn: { color: '#fff' },
+  rank: {
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    gap: 2,
+  },
+  rankTitle: { fontSize: 15, fontWeight: '800', color: Colors.returning },
+  rankBody: { fontSize: 12, lineHeight: 17, color: Colors.inkSoft },
+  loadingPill: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    gap: Spacing.sm,
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  loadingText: { fontSize: 12, color: Colors.inkSoft },
+  hintBar: { position: 'absolute', bottom: Spacing.xl, left: 0, right: 0, alignItems: 'center' },
+  emptyBar: {
+    position: 'absolute',
+    bottom: Spacing.xl,
+    left: Spacing.md,
+    right: Spacing.md,
+    backgroundColor: Colors.paper,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: Colors.line,
+    padding: Spacing.md,
+    gap: Spacing.xs,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  emptyTitle: { fontSize: 16, fontWeight: '800', color: Colors.ink },
+  emptyBody: { fontSize: 13, lineHeight: 19, color: Colors.inkSoft },
+  hint: {
+    backgroundColor: Colors.ink,
+    color: Colors.paper,
+    fontSize: 13,
+    borderRadius: Radius.lg,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    overflow: 'hidden',
   },
 });

@@ -1,5 +1,7 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
+import { require_ } from './env.js';
+
 export type ScrapbookPage = {
   place_type: string;
   caption: string;
@@ -72,9 +74,7 @@ export async function analyzePhotos(
   photos: string[],
   hint?: string
 ): Promise<ScrapbookPage> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY is not set');
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: require_('GEMINI_API_KEY') });
 
   const parts: any[] = [{ text: hint ? `${PROMPT}\n\nThe place is called: ${hint}` : PROMPT }];
   for (const photo of photos.slice(0, 4)) {
