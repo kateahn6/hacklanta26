@@ -38,7 +38,7 @@ interface TextBoxProps extends Omit<TextInputProps, 'style'> {
 export function TextBox({ invalid, multiline, ...props }: TextBoxProps) {
   return (
     <TextInput
-      placeholderTextColor={Colors.muted}
+      placeholderTextColor={Colors.textMuted}
       multiline={multiline}
       textAlignVertical={multiline ? 'top' : 'center'}
       {...props}
@@ -55,13 +55,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.hairline,
     fontFamily: Fonts.sans,
     fontSize: 15.5,
-    color: Colors.softBlack,
+    color: Colors.text,
   },
-  multiline: { minHeight: 110, fontFamily: Fonts.serifItalic, fontSize: 18, lineHeight: 25 },
+  multiline: { minHeight: 110, fontFamily: Fonts.sansItalic, fontSize: 16, lineHeight: 23 },
   invalid: { borderColor: Colors.danger },
 });

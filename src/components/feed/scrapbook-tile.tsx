@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Radius.pill,
-    backgroundColor: 'rgba(41, 46, 30, 0.82)',
+    backgroundColor: 'rgba(22, 44, 94, 0.82)',
   },
-  countText: { fontFamily: Fonts.sansSemiBold, fontSize: 11, color: Colors.cream },
+  countText: { fontFamily: Fonts.sansSemiBold, fontSize: 11, color: Colors.white },
 });

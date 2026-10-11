@@ -38,8 +38,8 @@ export function TabBar({ state, navigation, insets }: BottomTabBarProps) {
         accessibilityLabel={tab.label}
         onPress={onPress}
         style={styles.tab}>
-        <Ionicons name={focused ? tab.activeIcon : tab.icon} size={22} color={focused ? Colors.cherry : Colors.muted} />
-        <AppText style={[styles.label, { color: focused ? Colors.cherry : Colors.muted }]}>{tab.label}</AppText>
+        <Ionicons name={focused ? tab.activeIcon : tab.icon} size={22} color={focused ? Colors.navy : Colors.textMuted} />
+        <AppText style={[styles.label, { color: focused ? Colors.navy : Colors.textMuted }]}>{tab.label}</AppText>
       </PressableScale>
     );
   };
@@ -53,7 +53,7 @@ export function TabBar({ state, navigation, insets }: BottomTabBarProps) {
         onPress={() => setCreateOpen(true)}
         style={styles.tab}>
         <View style={styles.createButton}>
-          <Ionicons name="add" size={28} color={Colors.cream} />
+          <Ionicons name="add" size={28} color={Colors.white} />
         </View>
         <AppText style={[styles.label, styles.createLabel]}>Create</AppText>
       </PressableScale>
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingTop: Spacing.sm,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.hairline,
   },
@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginTop: -22,
-    backgroundColor: Colors.cherry,
+    backgroundColor: Colors.navy,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: Colors.paper,
+    borderColor: Colors.surface,
   },
-  createLabel: { color: Colors.cherry },
+  createLabel: { color: Colors.navy },
 });

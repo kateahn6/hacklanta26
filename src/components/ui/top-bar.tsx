@@ -24,7 +24,7 @@ export function TopBar({ title, right, floating, backIcon = 'arrow-back', onBack
 
   return (
     <View style={[styles.bar, { paddingTop: insets.top + Spacing.sm }, floating && styles.floating]}>
-      <IconButton icon={backIcon} label={backIcon === 'close' ? 'Close' : 'Back'} onPress={goBack} variant={floating ? 'paper' : 'clear'} />
+      <IconButton icon={backIcon} label={backIcon === 'close' ? 'Close' : 'Back'} onPress={goBack} variant={floating ? 'surface' : 'clear'} />
       <AppText variant="subheading" numberOfLines={1} style={styles.title}>
         {title ?? ''}
       </AppText>

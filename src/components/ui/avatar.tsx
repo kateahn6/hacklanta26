@@ -6,7 +6,7 @@ import type { User } from '@/types';
 
 import { AppText } from './app-text';
 
-const TONES = [Colors.olive, Colors.cherry, Colors.chocolate, Colors.blackOlive, Colors.caramel];
+const TONES = [Colors.navy, Colors.slate, Colors.sky, Colors.black];
 
 function toneFor(id: string) {
   let hash = 0;
@@ -26,5 +26,5 @@ export function Avatar({ user, size = 28 }: { user: User; size?: number }) {
 
 const styles = StyleSheet.create({
   avatar: { alignItems: 'center', justifyContent: 'center' },
-  initials: { fontFamily: Fonts.sansBold, color: Colors.cream },
+  initials: { fontFamily: Fonts.sansBold, color: Colors.white },
 });

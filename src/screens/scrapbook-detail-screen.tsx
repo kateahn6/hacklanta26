@@ -72,7 +72,7 @@ export function ScrapbookDetailScreen() {
           </AppText>
           <AppText variant="title">{scrapbook.title}</AppText>
           {scrapbook.description ? (
-            <AppText variant="body" color={Colors.chocolate}>
+            <AppText variant="body" color={Colors.slate}>
               {scrapbook.description}
             </AppText>
           ) : null}
@@ -148,7 +148,7 @@ export function ScrapbookDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   cover: { width: '100%' },
   sheet: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
-    backgroundColor: Colors.cream,
+    backgroundColor: Colors.background,
     paddingHorizontal: Gutter,
     paddingTop: Spacing.xl,
     gap: Spacing.md,
@@ -166,5 +166,5 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginTop: Spacing.xs },
   tile: { gap: 6 },
   tilePhoto: { width: '100%', borderRadius: Radius.md },
-  caption: { fontFamily: Fonts.serifItalic, fontSize: 14, lineHeight: 19, color: Colors.chocolate, paddingHorizontal: 2 },
+  caption: { fontFamily: Fonts.sansItalic, fontSize: 13, lineHeight: 18, color: Colors.slate, paddingHorizontal: 2 },
 });

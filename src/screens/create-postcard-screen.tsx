@@ -138,8 +138,8 @@ export function CreatePostcardScreen() {
           />
           {linkedPlace?.coordinate ? (
             <View style={styles.linked}>
-              <Ionicons name="location" size={14} color={Colors.olive} />
-              <AppText variant="caption" color={Colors.blackOlive}>
+              <Ionicons name="location" size={14} color={Colors.slate} />
+              <AppText variant="caption" color={Colors.navy}>
                 {linkedPlace.neighborhood}, {linkedPlace.city} · pinned on the map
               </AppText>
             </View>
@@ -151,12 +151,12 @@ export function CreatePostcardScreen() {
               accessibilityLabel={`Use ${place.name}, ${place.neighborhood}`}
               onPress={() => linkPlace(place.id)}
               style={styles.suggestion}>
-              <Ionicons name="location-outline" size={16} color={Colors.cherry} />
+              <Ionicons name="location-outline" size={16} color={Colors.navy} />
               <View style={styles.flex}>
                 <AppText variant="label">{place.name}</AppText>
                 <AppText variant="caption">{place.neighborhood}</AppText>
               </View>
-              <AppText variant="caption" color={Colors.cherry}>
+              <AppText variant="caption" color={Colors.navy}>
                 Use
               </AppText>
             </PressableScale>
@@ -209,9 +209,9 @@ export function CreatePostcardScreen() {
           />
         </FormField>
 
-        {errors.form ? <Notice icon="alert-circle-outline" tone="cherry" message={errors.form} /> : null}
+        {errors.form ? <Notice icon="alert-circle-outline" tone="navy" message={errors.form} /> : null}
         {Object.keys(errors).length > 0 && !errors.form ? (
-          <Notice icon="alert-circle-outline" tone="cherry" message="A few things need attention before publishing." />
+          <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention before publishing." />
         ) : null}
       </ScrollView>
       <FormFooter
@@ -224,7 +224,7 @@ export function CreatePostcardScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
   linked: { flexDirection: 'row', alignItems: 'center', gap: 4 },
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingHorizontal: Spacing.md,
     borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
 });

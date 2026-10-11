@@ -123,7 +123,7 @@ export function CreateScrapbookScreen() {
         </FormField>
 
         {Object.keys(errors).length > 0 ? (
-          <Notice icon="alert-circle-outline" tone="cherry" message="A few things need attention." />
+          <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention." />
         ) : null}
       </ScrollView>
       <FormFooter
@@ -136,7 +136,7 @@ export function CreateScrapbookScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   content: { paddingHorizontal: Gutter, paddingBottom: Spacing.xxl, gap: Spacing.xl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
 });

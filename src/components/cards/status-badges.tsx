@@ -15,10 +15,10 @@ export function StatusBadges({ item, now }: StatusBadgesProps) {
   const expiresAt = 'expiresAt' in item ? item.expiresAt : null;
   return (
     <View style={styles.row}>
-      {item.status === 'draft' ? <Badge label="Draft" icon="create-outline" tone="caramel" /> : null}
+      {item.status === 'draft' ? <Badge label="Draft" icon="create-outline" tone="slate" /> : null}
       {item.visibility === 'private' ? <Badge label="Private" icon="lock-closed" tone="dark" /> : null}
       {item.status === 'published' && expiresAt ? (
-        <Badge label={expiryLabel(expiresAt, now)} icon="time-outline" tone="cherry" />
+        <Badge label={expiryLabel(expiresAt, now)} icon="time-outline" tone="navy" />
       ) : null}
     </View>
   );

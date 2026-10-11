@@ -7,10 +7,10 @@ import { AppText } from './app-text';
 import type { IconName } from './icon-button';
 
 const TONES = {
-  sage: { bg: Colors.sageSoft, fg: Colors.blackOlive },
-  cherry: { bg: Colors.cherrySoft, fg: Colors.cherry },
-  dark: { bg: 'rgba(33, 31, 28, 0.72)', fg: Colors.cream },
-  caramel: { bg: '#F2E3CF', fg: Colors.chocolate },
+  sky: { bg: Colors.skySoft, fg: Colors.navy },
+  navy: { bg: Colors.navySoft, fg: Colors.navy },
+  dark: { bg: 'rgba(0, 0, 0, 0.7)', fg: Colors.white },
+  slate: { bg: Colors.backgroundDeep, fg: Colors.slate },
 } as const;
 
 interface BadgeProps {
@@ -19,7 +19,7 @@ interface BadgeProps {
   tone?: keyof typeof TONES;
 }
 
-export function Badge({ label, icon, tone = 'sage' }: BadgeProps) {
+export function Badge({ label, icon, tone = 'sky' }: BadgeProps) {
   const { bg, fg } = TONES[tone];
   return (
     <View style={[styles.badge, { backgroundColor: bg }]}>

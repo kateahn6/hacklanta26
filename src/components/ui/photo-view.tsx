@@ -18,7 +18,7 @@ export function PhotoView({ photo, style, aspect, label }: PhotoViewProps) {
   if (!photo) {
     return (
       <View style={[styles.empty, { aspectRatio: ratio }, style]} accessibilityLabel="No photo">
-        <Ionicons name="image-outline" size={26} color={Colors.muted} />
+        <Ionicons name="image-outline" size={26} color={Colors.textMuted} />
       </View>
     );
   }
@@ -34,5 +34,5 @@ export function PhotoView({ photo, style, aspect, label }: PhotoViewProps) {
 }
 
 const styles = StyleSheet.create({
-  empty: { backgroundColor: Colors.creamDeep, alignItems: 'center', justifyContent: 'center' },
+  empty: { backgroundColor: Colors.backgroundDeep, alignItems: 'center', justifyContent: 'center' },
 });

@@ -68,7 +68,7 @@ export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldP
                 hitSlop={8}
                 onPress={() => onChange(media.filter((x) => x.id !== m.id))}
                 style={styles.remove}>
-                <Ionicons name="close" size={14} color={Colors.cream} />
+                <Ionicons name="close" size={14} color={Colors.white} />
               </PressableScale>
             </View>
           ))}
@@ -81,9 +81,9 @@ export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldP
           disabled={busy}
           style={[styles.empty, invalid && styles.invalid]}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="images-outline" size={26} color={Colors.cherry} />
+            <Ionicons name="images-outline" size={26} color={Colors.navy} />
           </View>
-          <AppText variant="label" color={Colors.cherry}>
+          <AppText variant="label" color={Colors.navy}>
             {busy ? 'Opening photos…' : 'Add photos'}
           </AppText>
           <AppText variant="caption">Choose several at once from your library</AppText>
@@ -93,7 +93,7 @@ export function MediaPickerField({ media, onChange, invalid }: MediaPickerFieldP
         <Button label="Add more photos" icon="add" variant="secondary" onPress={add} loading={busy} />
       ) : null}
       {message ? (
-        <AppText variant="caption" color={Colors.chocolate} accessibilityRole="alert">
+        <AppText variant="caption" color={Colors.slate} accessibilityRole="alert">
           {message}
         </AppText>
       ) : null}
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: 'rgba(33, 31, 28, 0.72)',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -123,9 +123,9 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: Colors.caramel,
-    backgroundColor: Colors.paper,
+    borderColor: Colors.sky,
+    backgroundColor: Colors.surface,
   },
   invalid: { borderColor: Colors.danger },
-  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.cherrySoft, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xs },
+  emptyIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.navySoft, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.xs },
 });

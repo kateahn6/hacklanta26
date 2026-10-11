@@ -53,7 +53,7 @@ export function PostcardDetailScreen() {
         {justPublished ? (
           <Notice
             icon="checkmark-circle"
-            tone="sage"
+            tone="sky"
             message={
               postcard.status === 'draft'
                 ? 'Draft saved. Only you can see it until you publish.'
@@ -78,7 +78,7 @@ export function PostcardDetailScreen() {
             <AppText variant="overline">{item.categories.map((c) => categoryById(c).label).join(' · ')}</AppText>
           ) : null}
           <AppText variant="title">{item.place.name}</AppText>
-          <AppText variant="body" color={Colors.muted}>
+          <AppText variant="body" color={Colors.textMuted}>
             {item.place.neighborhood ? `${item.place.neighborhood}, ` : ''}
             {item.place.city}
           </AppText>
@@ -102,12 +102,12 @@ export function PostcardDetailScreen() {
             {postcard.cost ? <InfoTile icon="wallet-outline" label="Cost" value={postcard.cost} /> : null}
           </View>
         ) : null}
-        {postcard.tip ? <Notice icon="bulb-outline" tone="caramel" message={`Tip: ${postcard.tip}`} /> : null}
+        {postcard.tip ? <Notice icon="bulb-outline" tone="slate" message={`Tip: ${postcard.tip}`} /> : null}
 
         {own && postcard.status === 'published' && postcard.expiresAt ? (
           <Notice
             icon="time-outline"
-            tone="cherry"
+            tone="navy"
             message={
               isExpired(postcard, now)
                 ? 'Expired. It no longer appears in public discovery.'
@@ -146,16 +146,16 @@ export function PostcardDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, gap: Spacing.lg },
   mat: {
     padding: 8,
     paddingBottom: 26,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.sm,
     transform: [{ rotate: '-0.8deg' }],
-    boxShadow: '0 6px 20px rgba(33, 31, 28, 0.14)',
+    boxShadow: '0 6px 20px rgba(22, 44, 94, 0.14)',
   },
   photo: { width: '100%', borderRadius: 3 },
   titleBlock: { gap: Spacing.xs, marginTop: Spacing.sm },
@@ -163,9 +163,9 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
     padding: Spacing.xl,
     borderRadius: Radius.md,
-    backgroundColor: Colors.paper,
+    backgroundColor: Colors.surface,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.caramel,
+    borderLeftColor: Colors.sky,
   },
   signature: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   tiles: { flexDirection: 'row', gap: Spacing.sm },

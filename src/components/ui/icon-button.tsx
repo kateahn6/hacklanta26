@@ -12,14 +12,14 @@ interface IconButtonProps {
   icon: IconName;
   label: string;
   onPress: () => void;
-  variant?: 'paper' | 'clear' | 'cherry';
+  variant?: 'surface' | 'clear' | 'primary';
   size?: number;
   iconColor?: string;
 }
 
-export function IconButton({ icon, label, onPress, variant = 'paper', size = HitTarget, iconColor }: IconButtonProps) {
-  const background = variant === 'paper' ? Colors.paper : variant === 'cherry' ? Colors.cherry : 'transparent';
-  const color = iconColor ?? (variant === 'cherry' ? Colors.cream : Colors.softBlack);
+export function IconButton({ icon, label, onPress, variant = 'surface', size = HitTarget, iconColor }: IconButtonProps) {
+  const background = variant === 'surface' ? Colors.surface : variant === 'primary' ? Colors.navy : 'transparent';
+  const color = iconColor ?? (variant === 'primary' ? Colors.white : Colors.text);
 
   return (
     <PressableScale
@@ -30,7 +30,7 @@ export function IconButton({ icon, label, onPress, variant = 'paper', size = Hit
       style={[
         styles.button,
         { width: size, height: size, borderRadius: size / 2, backgroundColor: background },
-        variant === 'paper' && styles.raised,
+        variant === 'surface' && styles.raised,
       ]}>
       <Ionicons name={icon} size={Math.round(size * 0.45)} color={color} />
     </PressableScale>
@@ -39,5 +39,5 @@ export function IconButton({ icon, label, onPress, variant = 'paper', size = Hit
 
 const styles = StyleSheet.create({
   button: { alignItems: 'center', justifyContent: 'center' },
-  raised: { boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
+  raised: { boxShadow: '0 2px 10px rgba(22, 44, 94, 0.14)' },
 });

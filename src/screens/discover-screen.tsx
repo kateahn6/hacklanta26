@@ -98,7 +98,7 @@ export function DiscoverScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: Colors.cream },
+  screen: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: Gutter, gap: Spacing.md },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
   section: { marginBottom: Spacing.xxl },

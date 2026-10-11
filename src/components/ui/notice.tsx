@@ -9,16 +9,16 @@ import type { IconName } from './icon-button';
 interface NoticeProps {
   icon: IconName;
   message: string;
-  tone?: 'sage' | 'cherry' | 'caramel';
+  tone?: 'sky' | 'navy' | 'slate';
 }
 
 const TONES = {
-  sage: { bg: Colors.sageSoft, fg: Colors.blackOlive },
-  cherry: { bg: Colors.cherrySoft, fg: Colors.cherry },
-  caramel: { bg: '#F2E3CF', fg: Colors.chocolate },
+  sky: { bg: Colors.skySoft, fg: Colors.navy },
+  navy: { bg: Colors.navySoft, fg: Colors.navy },
+  slate: { bg: Colors.backgroundDeep, fg: Colors.slate },
 };
 
-export function Notice({ icon, message, tone = 'sage' }: NoticeProps) {
+export function Notice({ icon, message, tone = 'sky' }: NoticeProps) {
   const { bg, fg } = TONES[tone];
   return (
     <View style={[styles.notice, { backgroundColor: bg }]} accessibilityRole="text">

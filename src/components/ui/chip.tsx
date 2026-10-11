@@ -16,7 +16,7 @@ interface ChipProps {
 }
 
 export function Chip({ label, selected, onPress, icon, floating }: ChipProps) {
-  const color = selected ? Colors.cream : Colors.softBlack;
+  const color = selected ? Colors.white : Colors.text;
   return (
     <PressableScale
       accessibilityRole="button"
@@ -44,8 +44,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md + 2,
     borderRadius: Radius.pill,
   },
-  idle: { backgroundColor: Colors.paper, borderWidth: StyleSheet.hairlineWidth, borderColor: Colors.hairline },
-  floating: { backgroundColor: Colors.paper, boxShadow: '0 2px 8px rgba(33, 31, 28, 0.12)' },
-  selected: { backgroundColor: Colors.cherry },
+  idle: { backgroundColor: Colors.surface, borderWidth: StyleSheet.hairlineWidth, borderColor: Colors.hairline },
+  floating: { backgroundColor: Colors.surface, boxShadow: '0 2px 8px rgba(22, 44, 94, 0.12)' },
+  selected: { backgroundColor: Colors.navy },
   label: { fontFamily: Fonts.sansMedium, fontSize: 13.5, flexShrink: 1 },
 });

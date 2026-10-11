@@ -19,12 +19,12 @@ export function EmptyState({ icon, title, message, actionLabel, onAction }: Empt
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={26} color={Colors.olive} />
+        <Ionicons name={icon} size={26} color={Colors.slate} />
       </View>
       <AppText variant="heading" style={styles.center}>
         {title}
       </AppText>
-      <AppText variant="body" color={Colors.muted} style={styles.center}>
+      <AppText variant="body" color={Colors.textMuted} style={styles.center}>
         {message}
       </AppText>
       {actionLabel && onAction ? <Button label={actionLabel} onPress={onAction} variant="secondary" /> : null}
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.sageSoft,
+    backgroundColor: Colors.skySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
