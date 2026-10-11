@@ -21,7 +21,6 @@ import { useNow } from '@/hooks/use-now';
 import { api } from '@/lib/api';
 import { useApiContent } from '@/lib/api-content';
 import { useAuth } from '@/lib/auth';
-import { useData } from '@/lib/data';
 import { buildPublicFeed, filterFeed, type PostcardItem, type ScrapbookItem } from '@/lib/feed';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
@@ -33,9 +32,8 @@ export function DiscoverScreen() {
   const content = useContent();
   const now = useNow();
   const { profile, getAccessToken } = useAuth();
-  const { refresh } = useData();
   const [inviteCode, setInviteCode] = useState<string | null>(null);
-  const [shareBusy, setShareBusy] = useState<'invite' | 'demo' | null>(null);
+  const [shareBusy, setShareBusy] = useState<'invite' | null>(null);
   const [shareError, setShareError] = useState<string | null>(null);
   const [shareDone, setShareDone] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -75,26 +73,6 @@ export function DiscoverScreen() {
     }
   };
 
-  /** Befriends every seeded demo account, so the map fills up immediately. */
-  const joinDemo = async () => {
-    setShareBusy('demo');
-    setShareError(null);
-    try {
-      const token = await getAccessToken();
-      const res = await api<{ friends: { name: string | null }[] }>('/api/demo/befriend', {
-        method: 'POST',
-        token,
-        profile,
-      });
-      await refresh();
-      setShareDone(`Now sharing a map with ${res.friends.map((f) => f.name ?? 'a friend').join(', ')}.`);
-    } catch (err: any) {
-      setShareError(err?.message ?? 'Could not join the demo map.');
-    } finally {
-      setShareBusy(null);
-    }
-  };
-
   return (
     <ScrollView
       style={styles.screen}
@@ -125,14 +103,6 @@ export function DiscoverScreen() {
                       })
                   : createInvite
               }
-            />
-            <Button
-              label="Join demo map"
-              variant="secondary"
-              icon="map-outline"
-              loading={shareBusy === 'demo'}
-              flex
-              onPress={joinDemo}
             />
           </View>
         </View>
