@@ -10,7 +10,7 @@ export const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-$
 
 export const initials = (name: string) =>
   name
-    .split(/\s+/)
+    .split(/[\s_-]+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? '')

@@ -11,13 +11,30 @@ create extension if not exists pgcrypto;
 -- with is_demo so /api/demo/befriend can find them.
 create table if not exists users (
   id          text primary key,
-  name        text,
+  name        text,   -- unused: real names are not stored, see username
   email       text,
   avatar_url  text,
   is_demo     boolean not null default false,
   created_at  timestamptz not null default now()
 );
 alter table users add column if not exists is_demo boolean not null default false;
+
+-- Privacy: people are shown only by a random Reddit-style username such as
+-- "Sunny-Otter-4821", assigned on first sign-in. Real names are never stored.
+create or replace function random_username() returns text language sql volatile as $$
+  select (array['Sunny','Quiet','Brave','Lucky','Mellow','Witty','Gentle','Cosmic','Rusty','Velvet',
+                'Breezy','Sleepy','Golden','Misty','Clever','Humble','Jolly','Wild','Tiny','Bold'])[1 + floor(random() * 20)::int]
+      || '-' ||
+         (array['Otter','Heron','Fox','Maple','Comet','Pigeon','Badger','Falcon','Willow','Panda',
+                'Lark','Moose','Koala','Raven','Cedar','Finch','Bison','Gecko','Robin','Walrus'])[1 + floor(random() * 20)::int]
+      || '-' || lpad(floor(random() * 10000)::int::text, 4, '0')
+$$;
+alter table users add column if not exists username text;
+update users set username = random_username() where username is null;
+alter table users alter column username set default random_username();
+alter table users alter column username set not null;
+create unique index if not exists users_username_key on users (username);
+update users set name = null where name is not null;
 
 -- Written in both directions on accept, so every read is a plain equality join.
 create table if not exists friendships (

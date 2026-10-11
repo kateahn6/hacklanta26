@@ -6,7 +6,8 @@ import { query } from './db.js';
 
 export type AuthedUser = {
   id: string; // Auth0 `sub`
-  name: string | null;
+  /** Random public username, e.g. "Sunny-Otter-4821". The only name anyone sees. */
+  username: string;
   email: string | null;
   avatar_url: string | null;
 };
@@ -71,21 +72,30 @@ export async function requireUser(req: Request, res: Response, next: NextFunctio
   }
 
   // Access tokens carry no profile claims, so the app forwards them as headers.
-  const name = (payload.name as string | undefined) ?? header(req, 'x-user-name');
+  // The real name is deliberately never read: a username is assigned instead.
   const email = (payload.email as string | undefined) ?? header(req, 'x-user-email');
   const avatar = (payload.picture as string | undefined) ?? header(req, 'x-user-avatar');
 
   try {
-    const rows = await query<AuthedUser>(
-      `insert into users (id, name, email, avatar_url)
-       values ($1, $2, $3, $4)
-       on conflict (id) do update set
-         name = coalesce(excluded.name, users.name),
-         email = coalesce(excluded.email, users.email),
-         avatar_url = coalesce(excluded.avatar_url, users.avatar_url)
-       returning id, name, email, avatar_url`,
-      [sub, name ?? null, email ?? null, avatar ?? null]
-    );
+    // The username column defaults to random_username(); on the rare clash
+    // with an existing username, the insert is simply retried.
+    let rows: AuthedUser[] = [];
+    for (let attempt = 0; attempt < 5 && rows.length === 0; attempt++) {
+      try {
+        rows = await query<AuthedUser>(
+          `insert into users (id, email, avatar_url)
+           values ($1, $2, $3)
+           on conflict (id) do update set
+             email = coalesce(excluded.email, users.email),
+             avatar_url = coalesce(excluded.avatar_url, users.avatar_url)
+           returning id, username, email, avatar_url`,
+          [sub, email ?? null, avatar ?? null]
+        );
+      } catch (err) {
+        if ((err as { constraint?: string }).constraint !== 'users_username_key') throw err;
+      }
+    }
+    if (rows.length === 0) throw new Error('could not assign a username');
     req.user = rows[0];
     next();
   } catch (err) {

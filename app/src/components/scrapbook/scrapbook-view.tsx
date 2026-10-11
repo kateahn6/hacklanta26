@@ -63,7 +63,6 @@ export function ScrapbookView({ title, description, city, categories, cover, med
           <Avatar user={author} size={30} />
           <View style={styles.flex}>
             <AppText variant="label">{isOwn ? `${author.name} (you)` : author.name}</AppText>
-            <AppText variant="caption">@{author.handle}</AppText>
           </View>
           {meta}
         </View>

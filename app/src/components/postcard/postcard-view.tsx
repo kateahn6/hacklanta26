@@ -24,7 +24,7 @@ interface PostcardViewProps {
 export function PostcardView({ photo, note, place, author, date, isOwn, meta }: PostcardViewProps) {
   return (
     <View style={styles.wrap}>
-      <FlipPostcard photo={photo} note={note} signedBy={author.name.split(' ')[0]} place={place} date={date} />
+      <FlipPostcard photo={photo} note={note} signedBy={author.name} place={place} date={date} />
       <View style={styles.titleBlock}>
         {place.categories.length > 0 ? (
           <AppText variant="overline">{place.categories.map((c) => categoryById(c).label).join(' · ')}</AppText>
@@ -38,7 +38,6 @@ export function PostcardView({ photo, note, place, author, date, isOwn, meta }: 
           <Avatar user={author} size={28} />
           <View style={styles.flex}>
             <AppText variant="label">{isOwn ? `${author.name} (you)` : author.name}</AppText>
-            <AppText variant="caption">@{author.handle}</AppText>
           </View>
         </View>
         {meta}

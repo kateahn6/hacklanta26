@@ -26,7 +26,7 @@ export interface ScrapbookItem {
 
 export type FeedItem = PostcardItem | ScrapbookItem;
 
-const UNKNOWN_USER: User = { id: 'unknown', name: 'Someone', handle: 'someone', neighborhood: '' };
+const UNKNOWN_USER: User = { id: 'unknown', name: 'Someone', neighborhood: '' };
 
 export function toPostcardItem(content: Content, postcard: Postcard): PostcardItem | null {
   const place = content.placeById.get(postcard.placeId);

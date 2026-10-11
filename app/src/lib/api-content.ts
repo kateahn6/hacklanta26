@@ -94,11 +94,6 @@ function toSharedScrapbook(s: ApiScrapbook, me: string | undefined): Scrapbook {
   };
 }
 
-function handleFor(name: string | null, id: string): string {
-  const base = (name ?? id).toLowerCase().replace(/[^a-z0-9]+/g, '');
-  return `@${base.slice(0, 16) || 'friend'}`;
-}
-
 export interface ApiContent {
   users: User[];
   places: Place[];
@@ -111,10 +106,9 @@ export interface ApiContent {
 }
 
 export function useApiContent(): ApiContent {
-  const { places: apiPlaces, returning, scrapbooks: apiScrapbooks, loading, error } = useData();
+  const { places: apiPlaces, returning, scrapbooks: apiScrapbooks, username: myName, loading, error } = useData();
   const { profile } = useAuth();
   const me = profile?.sub;
-  const myName = profile?.name;
 
   return useMemo(() => {
     const places: Place[] = [];
@@ -132,7 +126,6 @@ export function useApiContent(): ApiContent {
           users.set(authorId, {
             id: authorId,
             name: entry.user_name ?? 'A friend',
-            handle: handleFor(entry.user_name, entry.user_id),
             neighborhood: 'Atlanta',
           });
         }
@@ -172,7 +165,6 @@ export function useApiContent(): ApiContent {
         users.set(creatorId, {
           id: creatorId,
           name: apiPlace.created_by_name ?? 'A friend',
-          handle: handleFor(apiPlace.created_by_name, apiPlace.created_by),
           neighborhood: 'Atlanta',
         });
       }
@@ -185,7 +177,7 @@ export function useApiContent(): ApiContent {
       for (const member of [{ id: apiScrapbook.owner_id, name: apiScrapbook.owner_name }, ...apiScrapbook.members]) {
         const id = asAuthor(member.id, me);
         if (!users.has(id) && id !== DEMO_USER_ID) {
-          users.set(id, { id, name: member.name ?? 'A friend', handle: handleFor(member.name, member.id), neighborhood: 'Atlanta' });
+          users.set(id, { id, name: member.name ?? 'A friend', neighborhood: 'Atlanta' });
         }
       }
     }
@@ -195,7 +187,6 @@ export function useApiContent(): ApiContent {
       users.set(DEMO_USER_ID, {
         id: DEMO_USER_ID,
         name: myName ?? 'You',
-        handle: handleFor(myName ?? null, me),
         neighborhood: 'Atlanta',
       });
     }

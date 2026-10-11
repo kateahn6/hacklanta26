@@ -13,7 +13,7 @@ type Options = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
   token: string | null;
-  /** Forwarded so the API can fill in the user row; access tokens carry no profile. */
+  /** Forwards the email for the user row. Name and photo are never sent, for privacy. */
   profile?: IdTokenClaims;
   timeoutMs?: number;
 };
@@ -31,9 +31,7 @@ export async function api<T>(path: string, options: Options): Promise<T> {
     Authorization: `Bearer ${options.token}`,
     'Content-Type': 'application/json',
   };
-  if (options.profile?.name) headers['x-user-name'] = encodeURIComponent(options.profile.name);
   if (options.profile?.email) headers['x-user-email'] = options.profile.email;
-  if (options.profile?.picture) headers['x-user-avatar'] = options.profile.picture;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 30_000);

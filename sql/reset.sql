@@ -9,3 +9,4 @@ drop table if exists invites cascade;
 drop table if exists places cascade;
 drop table if exists friendships cascade;
 drop table if exists users cascade;
+drop function if exists random_username();

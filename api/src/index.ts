@@ -8,7 +8,7 @@ import { analyzePhotos, CANNED, polishText } from './lib/gemini.js';
 
 const app = express();
 
-app.use(cors({ origin: '*', allowedHeaders: ['Authorization', 'Content-Type', 'x-user-name', 'x-user-email', 'x-user-avatar'] }));
+app.use(cors({ origin: '*', allowedHeaders: ['Authorization', 'Content-Type', 'x-user-email', 'x-user-avatar'] }));
 // Photos arrive as base64 data URLs, so the default 100kb limit is far too low.
 app.use(express.json({ limit: '15mb' }));
 
@@ -58,10 +58,10 @@ authed.use(requireUser);
 authed.get('/me', route(async (req, res) => {
   const me = user(req);
   const friends = await query(
-    `select u.id, u.name, u.email, u.avatar_url, u.is_demo
+    `select u.id, u.username, u.avatar_url, u.is_demo
      from friendships f join users u on u.id = f.friend_id
      where f.user_id = $1
-     order by u.name nulls last`,
+     order by u.username`,
     [me.id]
   );
   res.json({ user: me, friends });
@@ -73,11 +73,11 @@ authed.get('/places', route(async (req, res) => {
   const me = user(req);
   const places = await query(
     `select p.id, p.name, p.lat, p.lng, p.created_by, p.created_at,
-            cu.name as created_by_name,
+            cu.username as created_by_name,
             coalesce(
               (select json_agg(e order by e.created_at desc)
                from (
-                 select en.id, en.user_id, u.name as user_name, u.avatar_url,
+                 select en.id, en.user_id, u.username as user_name, u.avatar_url,
                         en.caption, en.story, en.tags, en.postcard_text,
                         en.photo_urls, en.created_at
                  from entries en join users u on u.id = en.user_id
@@ -207,11 +207,11 @@ const cleanCategories = (v: unknown) =>
 
 /** One scrapbook with members and ordered media. The code is only revealed to members. */
 const SCRAPBOOK_SELECT = `
-  select s.id, s.owner_id, o.name as owner_name, s.title, s.description, s.city, s.categories,
+  select s.id, s.owner_id, o.username as owner_name, s.title, s.description, s.city, s.categories,
          s.cover_url, s.cover_aspect, s.visibility, s.created_at, s.updated_at,
          case when exists (select 1 from scrapbook_members m where m.scrapbook_id = s.id and m.user_id = $1)
               then s.access_code end as access_code,
-         coalesce((select json_agg(json_build_object('id', m.user_id, 'name', u.name) order by m.joined_at)
+         coalesce((select json_agg(json_build_object('id', m.user_id, 'name', u.username) order by m.joined_at)
                    from scrapbook_members m join users u on u.id = m.user_id
                    where m.scrapbook_id = s.id), '[]') as members,
          coalesce((select json_agg(json_build_object(
@@ -483,7 +483,7 @@ authed.get('/returning', route(async (req, res) => {
      )
      select p.id, p.name, p.lat, p.lng,
             a.return_days, a.friend_count, a.repeat_friends, a.total_visits, a.last_day,
-            (select coalesce(json_agg(u.name), '[]'::json)
+            (select coalesce(json_agg(u.username), '[]'::json)
              from per_user pu join users u on u.id = pu.user_id
              where pu.place_id = p.id) as who
      from per_place a
@@ -643,7 +643,7 @@ authed.post('/friends/accept', route(async (req, res) => {
       [me.id, code]
     );
     const friend = await client.query(
-      `select id, name, email, avatar_url from users where id = $1`,
+      `select id, username, avatar_url from users where id = $1`,
       [inviter]
     );
     await client.query('commit');
@@ -662,8 +662,8 @@ authed.post('/friends/accept', route(async (req, res) => {
  */
 authed.post('/demo/befriend', route(async (req, res) => {
   const me = user(req);
-  const demo = await query<{ id: string; name: string | null }>(
-    `select id, name from users where is_demo = true and id <> $1`,
+  const demo = await query<{ id: string; username: string }>(
+    `select id, username from users where is_demo = true and id <> $1`,
     [me.id]
   );
   if (demo.length === 0) {

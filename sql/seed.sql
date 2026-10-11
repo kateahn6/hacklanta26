@@ -10,10 +10,10 @@ begin;
 
 delete from users where id in ('google-oauth2|900000000000000000101', 'google-oauth2|900000000000000000102', 'google-oauth2|900000000000000000103');
 
-insert into users (id, name, email, avatar_url, is_demo) values
-  ('google-oauth2|900000000000000000101', 'Maya Okonkwo (demo)', 'maya.demo@noted.app', 'https://i.pravatar.cc/200?img=47', true),
-  ('google-oauth2|900000000000000000102', 'Theo Alvarez (demo)', 'theo.demo@noted.app', 'https://i.pravatar.cc/200?img=12', true),
-  ('google-oauth2|900000000000000000103', 'Ren Fujita (demo)', 'ren.demo@noted.app', 'https://i.pravatar.cc/200?img=33', true);
+insert into users (id, username, email, avatar_url, is_demo) values
+  ('google-oauth2|900000000000000000101', 'Golden-Heron-1042', 'maya.demo@noted.app', 'https://i.pravatar.cc/200?img=47', true),
+  ('google-oauth2|900000000000000000102', 'Breezy-Fox-2718', 'theo.demo@noted.app', 'https://i.pravatar.cc/200?img=12', true),
+  ('google-oauth2|900000000000000000103', 'Velvet-Maple-3307', 'ren.demo@noted.app', 'https://i.pravatar.cc/200?img=33', true);
 
 -- Friendships are symmetric: both directions are stored.
 insert into friendships (user_id, friend_id) values

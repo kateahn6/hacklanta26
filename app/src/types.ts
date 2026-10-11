@@ -11,8 +11,8 @@ export interface Photo {
 
 export interface User {
   id: string;
+  /** A random public username like "Sunny-Otter-4821". Real names are never shown. */
   name: string;
-  handle: string;
   neighborhood: string;
 }
 
