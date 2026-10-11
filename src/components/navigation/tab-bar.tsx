@@ -10,7 +10,7 @@ import { PressableScale } from '@/components/ui/pressable-scale';
 import { Colors, Fonts, Spacing } from '@/theme/tokens';
 
 const TABS: Record<string, { label: string; icon: IconName; activeIcon: IconName }> = {
-  index: { label: 'Explore', icon: 'compass-outline', activeIcon: 'compass' },
+  index: { label: 'Explore', icon: 'map-outline', activeIcon: 'map' },
   discover: { label: 'Discover', icon: 'grid-outline', activeIcon: 'grid' },
   saved: { label: 'Saved', icon: 'bookmark-outline', activeIcon: 'bookmark' },
 };

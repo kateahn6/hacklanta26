@@ -9,6 +9,7 @@ import { MapMarker } from '@/components/map/map-marker';
 import { PlaceGallery } from '@/components/map/place-gallery';
 import { PlacePreviewCard } from '@/components/map/place-preview-card';
 import { AppText } from '@/components/ui/app-text';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CategoryChips } from '@/components/ui/category-chips';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -16,7 +17,7 @@ import { IconButton } from '@/components/ui/icon-button';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
 import { SegmentedControl } from '@/components/ui/segmented-control';
-import { CITY_REGION } from '@/data/content-source';
+import { CITY_REGION, DEMO_USER_ID } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
 import { buildMapPlaces, filterMapPlaces, type MapPlace } from '@/lib/map-places';
 import { notedMapStyle } from '@/lib/map-style';
@@ -30,7 +31,12 @@ const MAP_LOAD_TIMEOUT_MS = 12_000;
 const CARD_GAP = Spacing.md;
 const PLACE_DELTA = 0.018;
 
-export function MapScreen() {
+interface MapScreenProps {
+  /** Home tab: avatar and Ask Noted! instead of a back button, and the tab bar below. */
+  home?: boolean;
+}
+
+export function MapScreen({ home = false }: MapScreenProps) {
   const params = useLocalSearchParams<{ placeId?: string; scrapbookId?: string; view?: string }>();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -48,6 +54,7 @@ export function MapScreen() {
   const [mapFailed, setMapFailed] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
 
+  const me = content.userById.get(DEMO_USER_ID);
   const scrapbook = scrapbookId ? content.scrapbookById.get(scrapbookId) : undefined;
   const allPlaces = buildMapPlaces(
     content,
@@ -139,10 +146,19 @@ export function MapScreen() {
       style={[styles.header, { paddingTop: insets.top + Spacing.sm }, mode === 'gallery' && styles.headerSolid]}
       pointerEvents="box-none">
       <View style={styles.searchRow} pointerEvents="box-none">
-        <IconButton icon="arrow-back" label="Back to Explore" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
+        {home ? (
+          me ? (
+            <PressableScale accessibilityRole="button" accessibilityLabel="Your profile" hitSlop={4} onPress={() => router.push('/profile')} style={styles.avatar}>
+              <Avatar user={me} size={44} />
+            </PressableScale>
+          ) : null
+        ) : (
+          <IconButton icon="arrow-back" label="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
+        )}
         <View style={styles.flex}>
           <SearchBar value={query} onChangeText={setQuery} placeholder="Search places or categories" compact />
         </View>
+        {home ? <IconButton icon="sparkles-outline" label="Ask Noted! for recommendations" onPress={() => router.push('/ask')} variant="cherry" /> : null}
       </View>
       <View style={styles.toggleRow} pointerEvents="box-none">
         <View style={styles.toggle}>
@@ -237,7 +253,7 @@ export function MapScreen() {
         </View>
       ) : null}
 
-      <View style={[styles.bottom, { paddingBottom: insets.bottom + Spacing.md }]} pointerEvents="box-none">
+      <View style={[styles.bottom, { paddingBottom: (home ? 0 : insets.bottom) + Spacing.md }]} pointerEvents="box-none">
         <View style={styles.recenterRow} pointerEvents="box-none">
           <IconButton icon="locate-outline" label="Recenter map on Atlanta" onPress={recenter} />
         </View>
@@ -279,6 +295,7 @@ const styles = StyleSheet.create({
   center: { textAlign: 'center' },
   header: { position: 'absolute', top: 0, left: 0, right: 0, gap: Spacing.sm, zIndex: 5 },
   headerSolid: { position: 'relative', backgroundColor: Colors.cream, paddingBottom: Spacing.md },
+  avatar: { borderRadius: 22, boxShadow: '0 2px 10px rgba(33, 31, 28, 0.14)' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
   toggleRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingHorizontal: Gutter },
   toggle: { width: 180 },

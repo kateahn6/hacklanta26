@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { MasonryFeed } from '@/components/cards/masonry-feed';
 import { CollectionTile } from '@/components/feed/collection-tile';
+import { FeaturedCard } from '@/components/feed/featured-card';
 import { SectionHeader } from '@/components/feed/section-header';
 import { AppText } from '@/components/ui/app-text';
 import { CategoryChips } from '@/components/ui/category-chips';
@@ -25,8 +26,12 @@ export function DiscoverScreen() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<CategoryId | null>(null);
 
+  const filtering = query.trim().length > 0 || category !== null;
   const results = filterFeed(buildPublicFeed(content, now), category, query);
-  const collections = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook');
+  const featured = filtering
+    ? undefined
+    : results.find((item): item is ScrapbookItem => item.kind === 'scrapbook' && item.scrapbook.featured === true);
+  const collections = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook' && item !== featured);
   const postcards = results.filter((item): item is PostcardItem => item.kind === 'postcard');
 
   return (
@@ -62,6 +67,12 @@ export function DiscoverScreen() {
         />
       ) : null}
 
+      {featured ? (
+        <View style={styles.featured}>
+          <FeaturedCard item={featured} />
+        </View>
+      ) : null}
+
       {collections.length > 0 ? (
         <View style={styles.section}>
           <SectionHeader title="Themed collections" detail={`${collections.length} scrapbooks`} />
@@ -90,5 +101,6 @@ const styles = StyleSheet.create({
   titleText: { gap: 2 },
   chips: { marginTop: Spacing.md, marginBottom: Spacing.lg },
   section: { marginBottom: Spacing.xxl },
+  featured: { paddingHorizontal: Gutter, marginBottom: Spacing.xxl },
   carousel: { gap: Spacing.md, paddingHorizontal: Gutter },
 });
