@@ -16,7 +16,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Notice } from '@/components/ui/notice';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
-import { currentUserId } from '@/lib/me';
+import { DEMO_USER_ID } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
 import { api } from '@/lib/api';
 import { useApiContent } from '@/lib/api-content';
@@ -50,7 +50,7 @@ export function DiscoverScreen() {
 
   const filtering = query.trim().length > 0 || category !== null;
   const results = filterFeed(buildPublicFeed(content, now), category, query);
-  const myPosts = buildMyPosts(content, currentUserId());
+  const myPosts = buildMyPosts(content, DEMO_USER_ID);
   const tileWidth = Math.min(150, width * 0.38);
   const scrapbooks = results.filter((item): item is ScrapbookItem => item.kind === 'scrapbook');
   const postcards = results.filter((item): item is PostcardItem => item.kind === 'postcard');

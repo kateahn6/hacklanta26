@@ -10,7 +10,7 @@ export class ApiError extends Error {
 }
 
 type Options = {
-  method?: 'GET' | 'POST';
+  method?: 'GET' | 'POST' | 'DELETE';
   body?: unknown;
   token: string | null;
   /** Forwarded so the API can fill in the user row; access tokens carry no profile. */

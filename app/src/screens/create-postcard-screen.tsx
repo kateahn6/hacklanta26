@@ -15,10 +15,11 @@ import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
 import { PressableScale } from '@/components/ui/pressable-scale';
 import { SegmentedControl } from '@/components/ui/segmented-control';
+import { DeleteButton } from '@/components/ui/delete-button';
 import { TopBar } from '@/components/ui/top-bar';
 import { VisibilitySelector } from '@/components/ui/visibility-selector';
 import { CATEGORIES } from '@/data/categories';
-import { currentUserId } from '@/lib/me';
+import { DEMO_USER_ID } from '@/data/content-source';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { useData } from '@/lib/data';
@@ -73,7 +74,7 @@ export function CreatePostcardScreen() {
   const [saving, setSaving] = useState(false);
   const [aiSource, setAiSource] = useState<ScrapbookPage['source'] | null>(null);
   const [previewing, setPreviewing] = useState(false);
-  const author = content.userById.get(currentUserId());
+  const author = content.userById.get(DEMO_USER_ID);
 
   const linkedPlace = linkedPlaceId ? content.placeById.get(linkedPlaceId) : undefined;
   const q = placeName.trim().toLowerCase();
@@ -260,7 +261,7 @@ export function CreatePostcardScreen() {
     const postcard: Postcard = {
       id: editing?.id ?? newId('pc'),
       placeId,
-      authorId: currentUserId(),
+      authorId: DEMO_USER_ID,
       photo,
       note: note.trim(),
       visibility,
@@ -276,7 +277,11 @@ export function CreatePostcardScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <TopBar title={editing ? 'Edit postcard' : 'New postcard'} backIcon="close" />
+      <TopBar
+        title={editing ? 'Edit postcard' : 'New postcard'}
+        backIcon="close"
+        right={editing ? <DeleteButton kind="postcard" id={editing.id} /> : null}
+      />
 
       {generating ? (
         <BusyOverlay

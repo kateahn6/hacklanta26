@@ -1,4 +1,4 @@
-import { currentUserId } from '@/lib/me';
+import { DEMO_USER_ID } from '@/data/content-source';
 import type { Postcard, Scrapbook } from '@/types';
 
 /** Published, public, and not expired. The only postcards shown in public discovery. */
@@ -14,7 +14,7 @@ export function isScrapbookPublic(scrapbook: Scrapbook): boolean {
   return scrapbook.status === 'published' && scrapbook.visibility === 'public';
 }
 
-export const isOwn = (item: { authorId: string }) => item.authorId === currentUserId();
+export const isOwn = (item: { authorId: string }) => item.authorId === DEMO_USER_ID;
 
 /** What the signed-in user may open: public content plus everything they own. */
 export const canViewPostcard = (postcard: Postcard, now: number) => isPostcardPublic(postcard, now) || isOwn(postcard);

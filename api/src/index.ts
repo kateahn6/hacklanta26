@@ -168,6 +168,25 @@ authed.post('/entries', route(async (req, res) => {
   }
 }));
 
+/** Deletes one of my own entries. Visits stay: the trip still happened, it just has no postcard. */
+authed.delete('/entries/:id', route(async (req, res) => {
+  const me = user(req);
+  const id = String(req.params.id);
+  if (!/^[0-9a-f-]{36}$/i.test(id)) {
+    res.status(404).json({ error: 'Entry not found' });
+    return;
+  }
+  const rows = await query<{ id: string }>(
+    `delete from entries where id = $1 and user_id = $2 returning id`,
+    [id, me.id]
+  );
+  if (rows.length === 0) {
+    res.status(404).json({ error: 'Entry not found, or it is not yours to delete' });
+    return;
+  }
+  res.json({ deleted: rows[0].id });
+}));
+
 /**
  * "Friends keep coming back": reads the daily_place_visits continuous aggregate
  * and joins friendships OUTSIDE the aggregate. A place scores on return days —
