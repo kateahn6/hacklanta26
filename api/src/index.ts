@@ -361,16 +361,19 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ error: err.message ?? 'Server error' });
 });
 
+// Render injects PORT; 8787 is the local default. Binding 0.0.0.0 (not
+// loopback) is what makes the service reachable inside Render's network.
 const port = Number(process.env.PORT ?? 8787);
 const { missing } = reportEnv();
 
-app.listen(port, () => {
-  console.log(`[unfold] API listening on http://localhost:${port}`);
-  console.log(`[unfold] health: http://localhost:${port}/health`);
+app.listen(port, '0.0.0.0', () => {
+  console.log(`[unfold] API listening on port ${port} (health: /health)`);
   if (missing.length > 0) {
     console.error(`[unfold] missing env: ${missing.join(', ')}`);
   }
-  console.log(
-    '[unfold] expose this port with a tunnel and set EXPO_PUBLIC_API_URL to the tunnel URL'
-  );
+  if (!process.env.RENDER) {
+    console.log(
+      '[unfold] local dev: expose this port with ngrok and point EXPO_PUBLIC_API_URL at it'
+    );
+  }
 });

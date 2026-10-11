@@ -4,6 +4,11 @@ Community discovery through scrapbook entries instead of ratings. Friends share
 real places, Gemini writes the page from the photos, and the ranking is built on
 one signal only: who keeps coming back.
 
+    Expo app (Expo Go)  ->  Express on Render  ->  Tiger Data + Gemini
+                                   ^
+                            Auth0 access tokens
+                         verified with jose + JWKS
+
 ```
 app/   Expo (SDK 57, TypeScript) — runs in Expo Go
 api/   Node + Express + TypeScript API
@@ -32,11 +37,32 @@ npm run dev              # listens on PORT (default 8787)
 curl localhost:8787/health
 ```
 
-The phone cannot reach `localhost`, so expose the port:
+The phone cannot reach `localhost`, so for local dev expose the port:
 
 ```bash
-ngrok http 8787          # or: cloudflared tunnel --url http://localhost:8787
+ngrok http 8787
 ```
+
+### Deploying to Render
+
+`render.yaml` is a blueprint; the equivalent manual setup is a **Web Service**
+with:
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `api` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Health Check Path | `/health` |
+
+Render injects `PORT` and the server binds `0.0.0.0`, so nothing else is
+needed. Set `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `DATABASE_URL`, `GEMINI_API_KEY`
+and `DEMO_MODE=1` as environment variables in the dashboard — the repo has only
+`.env.example`. Once it is live, `EXPO_PUBLIC_API_URL` becomes the Render URL
+and ngrok is no longer in the loop.
+
+On the free plan the service sleeps when idle, so the first request after a
+pause takes ~30s. **Hit `/health` a minute before demoing** to warm it up.
 
 ## 3. Auth0
 
