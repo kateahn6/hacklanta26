@@ -3,21 +3,19 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadges } from '@/components/cards/status-badges';
+import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
-import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InfoTile } from '@/components/ui/info-tile';
 import { Notice } from '@/components/ui/notice';
-import { PhotoView } from '@/components/ui/photo-view';
 import { TopBar } from '@/components/ui/top-bar';
-import { categoryById } from '@/data/categories';
 import { useNow } from '@/hooks/use-now';
 import { toPostcardItem } from '@/lib/feed';
 import { formatDate } from '@/lib/format';
 import { canViewPostcard, expiryLabel, isExpired, isOwn } from '@/lib/visibility';
 import { useContent } from '@/store/content';
-import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
+import { Colors, Gutter, Spacing } from '@/theme/tokens';
 
 export function PostcardDetailScreen() {
   const { id, justPublished } = useLocalSearchParams<{ id: string; justPublished?: string }>();
@@ -64,42 +62,19 @@ export function PostcardDetailScreen() {
           />
         ) : null}
 
-        <View style={styles.mat}>
-          <PhotoView
-            photo={item.photo}
-            aspect={Math.min(1.4, Math.max(0.8, item.photo?.aspect ?? 1))}
-            style={styles.photo}
-            label={`Photo of ${item.place.name}`}
-          />
-        </View>
+        <PostcardView
+          photo={item.photo}
+          note={postcard.note}
+          place={item.place}
+          author={item.author}
+          date={postcard.visitedOn ?? postcard.createdAt}
+          isOwn={own}
+          meta={<StatusBadges item={postcard} now={now} />}
+        />
 
-        <View style={styles.titleBlock}>
-          {item.categories.length > 0 ? (
-            <AppText variant="overline">{item.categories.map((c) => categoryById(c).label).join(' · ')}</AppText>
-          ) : null}
-          <AppText variant="title">{item.place.name}</AppText>
-          <AppText variant="body" color={Colors.textMuted}>
-            {item.place.neighborhood ? `${item.place.neighborhood}, ` : ''}
-            {item.place.city}
-          </AppText>
-          <StatusBadges item={postcard} now={now} />
-        </View>
-
-        <View style={styles.back}>
-          <AppText variant="note">“{postcard.note || 'No note yet.'}”</AppText>
-          <View style={styles.signature}>
-            <Avatar user={item.author} size={32} />
-            <View>
-              <AppText variant="label">{own ? `${item.author.name} (you)` : item.author.name}</AppText>
-              <AppText variant="caption">@{item.author.handle}</AppText>
-            </View>
-          </View>
-        </View>
-
-        {postcard.visitedOn || postcard.cost || postcard.tip ? (
+        {postcard.visitedOn ? (
           <View style={styles.tiles}>
-            {postcard.visitedOn ? <InfoTile icon="calendar-outline" label="Visited" value={formatDate(postcard.visitedOn)} /> : null}
-            {postcard.cost ? <InfoTile icon="wallet-outline" label="Cost" value={postcard.cost} /> : null}
+            <InfoTile icon="calendar-outline" label="Visited" value={formatDate(postcard.visitedOn)} />
           </View>
         ) : null}
         {postcard.tip ? <Notice icon="bulb-outline" tone="slate" message={`Tip: ${postcard.tip}`} /> : null}
@@ -149,25 +124,6 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: Colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: Gutter, gap: Spacing.lg },
-  mat: {
-    padding: 8,
-    paddingBottom: 26,
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.sm,
-    transform: [{ rotate: '-0.8deg' }],
-    boxShadow: '0 6px 20px rgba(22, 44, 94, 0.14)',
-  },
-  photo: { width: '100%', borderRadius: 3 },
-  titleBlock: { gap: Spacing.xs, marginTop: Spacing.sm },
-  back: {
-    gap: Spacing.lg,
-    padding: Spacing.xl,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.surface,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.sky,
-  },
-  signature: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   tiles: { flexDirection: 'row', gap: Spacing.sm },
   actions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
 });

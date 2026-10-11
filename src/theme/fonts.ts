@@ -4,6 +4,7 @@ import { Inter_400Regular_Italic } from '@expo-google-fonts/inter/400Regular_Ita
 import { Inter_500Medium } from '@expo-google-fonts/inter/500Medium';
 import { Inter_600SemiBold } from '@expo-google-fonts/inter/600SemiBold';
 import { Inter_700Bold } from '@expo-google-fonts/inter/700Bold';
+import { OoohBaby_400Regular } from '@expo-google-fonts/oooh-baby/400Regular';
 
 // Keys must match the family names in `Fonts` (tokens.ts).
 export const FontAssets = {
@@ -12,4 +13,5 @@ export const FontAssets = {
   Inter_500Medium,
   Inter_600SemiBold,
   Inter_700Bold,
+  OoohBaby_400Regular,
 };

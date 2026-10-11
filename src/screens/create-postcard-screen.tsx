@@ -5,7 +5,9 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 're
 
 import { FormField, TextBox } from '@/components/create/form-field';
 import { FormFooter } from '@/components/create/form-footer';
+import { PreviewModal } from '@/components/create/preview-modal';
 import { PhotoPickerField } from '@/components/create/photo-picker-field';
+import { PostcardView } from '@/components/postcard/postcard-view';
 import { AppText } from '@/components/ui/app-text';
 import { Chip } from '@/components/ui/chip';
 import { Notice } from '@/components/ui/notice';
@@ -20,7 +22,7 @@ import { isOwn } from '@/lib/visibility';
 import { useAppStore } from '@/store/app-store';
 import { useContent } from '@/store/content';
 import { Colors, Gutter, Radius, Spacing } from '@/theme/tokens';
-import type { CategoryId, ExpiryOption, Photo, Postcard, PublishStatus, Visibility } from '@/types';
+import type { CategoryId, ExpiryOption, Photo, Place, Postcard, PublishStatus, Visibility } from '@/types';
 
 const NOTE_LIMIT = 200;
 const HOUR = 60 * 60 * 1000;
@@ -47,6 +49,8 @@ export function CreatePostcardScreen() {
   const [visibility, setVisibility] = useState<Visibility>(editing?.visibility ?? 'public');
   const [expiry, setExpiry] = useState<ExpiryOption>(editing?.expiryOption ?? 'never');
   const [errors, setErrors] = useState<Errors>({});
+  const [previewing, setPreviewing] = useState(false);
+  const author = content.userById.get(DEMO_USER_ID);
 
   const linkedPlace = linkedPlaceId ? content.placeById.get(linkedPlaceId) : undefined;
   const q = placeName.trim().toLowerCase();
@@ -81,10 +85,27 @@ export function CreatePostcardScreen() {
     return next;
   };
 
+  const openPreview = () => {
+    const found = validate('published');
+    setErrors(found);
+    if (Object.keys(found).length === 0) setPreviewing(true);
+  };
+
+  // What the place will look like once saved, for the preview.
+  const previewPlace: Place = linkedPlace ?? {
+    id: 'preview',
+    name: placeName.trim(),
+    neighborhood: '',
+    city: city.trim(),
+    categories: category ? [category] : [],
+    coordinate: null,
+  };
+
   const save = (status: PublishStatus) => {
     const found = validate(status);
     setErrors(found);
     if (Object.keys(found).length > 0) return;
+    setPreviewing(false);
 
     let placeId = linkedPlace?.id;
     if (!placeId) {
@@ -214,11 +235,25 @@ export function CreatePostcardScreen() {
           <Notice icon="alert-circle-outline" tone="navy" message="A few things need attention before publishing." />
         ) : null}
       </ScrollView>
-      <FormFooter
-        onSaveDraft={() => save('draft')}
-        onPublish={() => save('published')}
-        publishLabel={editing?.status === 'published' ? 'Update' : 'Publish'}
-      />
+      <FormFooter onSaveDraft={() => save('draft')} onPublish={openPreview} publishLabel="Preview" />
+
+      {author ? (
+        <PreviewModal
+          visible={previewing}
+          visibility={visibility}
+          postLabel={editing?.status === 'published' ? 'Update' : 'Post'}
+          onEdit={() => setPreviewing(false)}
+          onPost={() => save('published')}>
+          <PostcardView
+            photo={photo}
+            note={note.trim()}
+            place={previewPlace}
+            author={author}
+            date={editing?.visitedOn ?? new Date().toISOString()}
+            isOwn
+          />
+        </PreviewModal>
+      ) : null}
     </KeyboardAvoidingView>
   );
 }

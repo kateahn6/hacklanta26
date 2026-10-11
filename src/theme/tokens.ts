@@ -31,6 +31,8 @@ export const Fonts = {
   sansMedium: 'Inter_500Medium',
   sansSemiBold: 'Inter_600SemiBold',
   sansBold: 'Inter_700Bold',
+  /** Handwriting, used only for the message on the back of a postcard. */
+  script: 'OoohBaby_400Regular',
 } as const;
 
 export const Spacing = {
