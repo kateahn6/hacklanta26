@@ -29,11 +29,10 @@ const EXPIRY_MS: Record<ExpiryOption, number | null> = { never: null, '24h': 24 
 type Errors = Partial<Record<'photo' | 'place' | 'city' | 'note' | 'form', string>>;
 
 export function CreatePostcardScreen() {
-  const params = useLocalSearchParams<{ id?: string; forScrapbook?: string }>();
+  const params = useLocalSearchParams<{ id?: string }>();
   const content = useContent();
   const upsertPlace = useAppStore((s) => s.upsertPlace);
   const upsertPostcard = useAppStore((s) => s.upsertPostcard);
-  const addComposerStops = useAppStore((s) => s.addComposerStops);
 
   const existing = params.id ? content.postcardById.get(params.id) : undefined;
   const editing = existing && isOwn(existing) ? existing : undefined;
@@ -115,22 +114,13 @@ export function CreatePostcardScreen() {
     };
     upsertPostcard(postcard);
 
-    if (params.forScrapbook) {
-      addComposerStops([postcard.id]);
-      router.back();
-    } else {
-      router.replace({ pathname: '/postcard/[id]', params: { id: postcard.id, justPublished: '1' } });
-    }
+    router.replace({ pathname: '/postcard/[id]', params: { id: postcard.id, justPublished: '1' } });
   };
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <TopBar title={editing ? 'Edit postcard' : 'New postcard'} backIcon="close" />
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {params.forScrapbook ? (
-          <Notice icon="albums-outline" message="This postcard will be added to the scrapbook you’re making." />
-        ) : null}
-
         <FormField label="Photo" error={errors.photo}>
           <PhotoPickerField photo={photo} onChange={setPhoto} invalid={Boolean(errors.photo)} />
         </FormField>

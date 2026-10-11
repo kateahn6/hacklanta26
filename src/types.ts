@@ -49,10 +49,13 @@ export interface Postcard {
   expiryOption?: ExpiryOption;
 }
 
-export interface ScrapbookStop {
-  postcardId: string;
-  /** Optional itinerary time label, e.g. "10:00". */
-  time?: string;
+/** One image in a scrapbook. Scrapbooks hold their own media, not postcards. */
+export interface ScrapbookMedia {
+  id: string;
+  photo: Photo;
+  caption?: string;
+  /** Optional link to a place so the scrapbook can be shown on the map. */
+  placeId?: string;
 }
 
 export interface Scrapbook {
@@ -61,9 +64,10 @@ export interface Scrapbook {
   description: string;
   city: string;
   authorId: string;
-  /** Null means "use the first stop's photo". */
+  /** Null means "use the first image". */
   cover: Photo | null;
-  stops: ScrapbookStop[];
+  categories: CategoryId[];
+  media: ScrapbookMedia[];
   visibility: Visibility;
   status: PublishStatus;
   createdAt: string;

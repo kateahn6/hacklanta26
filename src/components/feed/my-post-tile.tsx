@@ -19,7 +19,7 @@ export interface MyPost {
 }
 
 /** The demo user's postcards and scrapbooks, drafts and private ones included, newest first. */
-export function buildMyPosts(content: Content, now: number, authorId: string): MyPost[] {
+export function buildMyPosts(content: Content, authorId: string): MyPost[] {
   const postcards: MyPost[] = content.postcards
     .filter((p) => p.authorId === authorId)
     .map((p) => ({
@@ -35,7 +35,7 @@ export function buildMyPosts(content: Content, now: number, authorId: string): M
       key: `scrapbook:${s.id}`,
       kind: 'scrapbook',
       title: s.title,
-      photo: toScrapbookItem(content, s, now).cover,
+      photo: toScrapbookItem(content, s).cover,
       item: s,
     }));
   return [...postcards, ...scrapbooks].sort((a, b) => b.item.createdAt.localeCompare(a.item.createdAt));

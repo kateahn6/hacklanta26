@@ -17,12 +17,12 @@ interface ScrapbookCardProps {
   onPress: () => void;
 }
 
-/** A collection: cover photo on a small stack of pages, with a place count. */
+/** A scrapbook: cover photo on a small stack of pages, with a photo count. */
 export function ScrapbookCard({ item, aspect, now, onPress }: ScrapbookCardProps) {
   return (
     <PressableScale
       accessibilityRole="button"
-      accessibilityLabel={`Scrapbook: ${item.scrapbook.title}, ${item.stops.length} places, by ${item.author.name}`}
+      accessibilityLabel={`Scrapbook: ${item.scrapbook.title}, ${item.media.length} photos, by ${item.author.name}`}
       onPress={onPress}
       style={styles.card}>
       <View style={styles.stack}>
@@ -32,7 +32,7 @@ export function ScrapbookCard({ item, aspect, now, onPress }: ScrapbookCardProps
           <PhotoView photo={item.cover} aspect={aspect} style={styles.photo} />
           <View style={styles.count}>
             <Ionicons name="albums-outline" size={12} color={Colors.cream} />
-            <AppText style={styles.countText}>{item.stops.length} places</AppText>
+            <AppText style={styles.countText}>{item.media.length} photos</AppText>
           </View>
         </View>
       </View>

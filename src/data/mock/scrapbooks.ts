@@ -1,7 +1,14 @@
-import type { Scrapbook } from '@/types';
+import type { Photo, Scrapbook, ScrapbookMedia } from '@/types';
 
 import { Photos } from './photos';
 import { DEMO_USER_ID } from './users';
+
+const media = (id: string, photo: Photo, caption?: string, placeId?: string): ScrapbookMedia => ({
+  id,
+  photo,
+  caption,
+  placeId,
+});
 
 export const scrapbooks: Scrapbook[] = [
   {
@@ -11,12 +18,14 @@ export const scrapbooks: Scrapbook[] = [
     city: 'Atlanta',
     authorId: 'u-maya',
     cover: Photos.streetMural,
-    stops: [
-      { postcardId: 'pc-condesa-cortado', time: '10:00' },
-      { postcardId: 'pc-krog-tunnel', time: '11:30' },
-      { postcardId: 'pc-l5p-afternoon', time: '13:00' },
-      { postcardId: 'pc-contemporary-free', time: '15:30' },
-      { postcardId: 'pc-jackson-blue-hour', time: '19:00' },
+    categories: ['art'],
+    media: [
+      media('m-cs-1', Photos.streetMural, 'The tunnel had a fresh coat this week', 'p-krog-tunnel'),
+      media('m-cs-2', Photos.espressoFlatlay, 'Fuel first', 'p-condesa'),
+      media('m-cs-3', Photos.paintBrushes, 'Borrowed brushes at an open studio'),
+      media('m-cs-4', Photos.whiteGallery, 'Room after quiet room', 'p-contemporary'),
+      media('m-cs-5', Photos.paintStrokes, 'Color I want to live inside'),
+      media('m-cs-6', Photos.skyline, 'Blue hour to end it', 'p-jackson'),
     ],
     visibility: 'public',
     status: 'published',
@@ -30,10 +39,14 @@ export const scrapbooks: Scrapbook[] = [
     city: 'Atlanta',
     authorId: 'u-priya',
     cover: Photos.cafeCounter,
-    stops: [
-      { postcardId: 'pc-condesa-cortado' },
-      { postcardId: 'pc-ponce-window-seat' },
-      { postcardId: 'pc-l5p-afternoon' },
+    categories: ['food'],
+    media: [
+      media('m-ic-1', Photos.cafeCounter, 'Counter seats are the best seats'),
+      media('m-ic-2', Photos.lattePlants, 'Window light and plants', 'p-ponce'),
+      media('m-ic-3', Photos.pourOver, 'Slow pour, slow morning'),
+      media('m-ic-4', Photos.cafeSign, 'Follow the sign'),
+      media('m-ic-5', Photos.espressoFlatlay, 'Cortado, always', 'p-condesa'),
+      media('m-ic-6', Photos.cafeLoft, 'Laptop-free zone, bless them'),
     ],
     visibility: 'public',
     status: 'published',
@@ -46,12 +59,13 @@ export const scrapbooks: Scrapbook[] = [
     city: 'Atlanta',
     authorId: 'u-sam',
     cover: Photos.friendsTable,
-    stops: [
-      { postcardId: 'pc-piedmont-blanket', time: 'Sat 10:00' },
-      { postcardId: 'pc-krog-tunnel', time: 'Sat 14:00' },
-      { postcardId: 'pc-sweet-auburn-lunch', time: 'Sun 12:00' },
-      { postcardId: 'pc-contemporary-free', time: 'Sun 14:00' },
-      { postcardId: 'pc-oakland-quiet', time: 'Sun 16:00' },
+    categories: ['hidden'],
+    media: [
+      media('m-aw-1', Photos.greenValley, 'Free: a whole park', 'p-piedmont'),
+      media('m-aw-2', Photos.friendsTable, 'Split everything'),
+      media('m-aw-3', Photos.streetMural, 'Free: the best wall in town', 'p-krog-tunnel'),
+      media('m-aw-4', Photos.sharedPlates, 'Lunch for under $10', 'p-sweet-auburn'),
+      media('m-aw-5', Photos.forestPath, 'Sunday walk', 'p-oakland'),
     ],
     visibility: 'public',
     status: 'published',
@@ -64,11 +78,14 @@ export const scrapbooks: Scrapbook[] = [
     city: 'Atlanta',
     authorId: 'u-marcus',
     cover: Photos.wineToast,
-    stops: [
-      { postcardId: 'pc-krog-market-plates', time: '18:00' },
-      { postcardId: 'pc-ponce-rooftop', time: '19:30' },
-      { postcardId: 'pc-fox-ceiling', time: '21:00' },
-      { postcardId: 'pc-jackson-blue-hour', time: '23:00' },
+    categories: ['food', 'music'],
+    media: [
+      media('m-vf-1', Photos.wineToast, 'Cheers to out-of-towners'),
+      media('m-vf-2', Photos.smallPlates, 'Everyone orders one thing', 'p-krog-market'),
+      media('m-vf-3', Photos.restaurantRoom, 'Dinner somewhere with good light'),
+      media('m-vf-4', Photos.eventHall, 'Then a show', 'p-fox'),
+      media('m-vf-5', Photos.dinnerTable, 'The long table'),
+      media('m-vf-6', Photos.skyline, 'Then the view', 'p-jackson'),
     ],
     visibility: 'public',
     status: 'published',
@@ -81,11 +98,13 @@ export const scrapbooks: Scrapbook[] = [
     city: 'Atlanta',
     authorId: 'u-lena',
     cover: Photos.forestPath,
-    stops: [
-      { postcardId: 'pc-oakland-quiet' },
-      { postcardId: 'pc-garden-bloom' },
-      { postcardId: 'pc-piedmont-blanket' },
-      { postcardId: 'pc-beltline-ride' },
+    categories: ['nature'],
+    media: [
+      media('m-qa-1', Photos.forestPath, 'Under the oaks', 'p-oakland'),
+      media('m-qa-2', Photos.cherryBlossom, 'Bloom week', 'p-botanical'),
+      media('m-qa-3', Photos.bigTree, 'My favorite tree on the trail', 'p-beltline'),
+      media('m-qa-4', Photos.greenValley, 'Lawn nap', 'p-piedmont'),
+      media('m-qa-5', Photos.oldPainting, 'Landscape at the museum on a rainy day', 'p-high'),
     ],
     visibility: 'public',
     status: 'published',
@@ -93,17 +112,18 @@ export const scrapbooks: Scrapbook[] = [
   },
   {
     id: 'sb-local-favorites',
-    title: 'Local favorites you might miss',
-    description: "The spots locals keep quiet about. Now you're one of us.",
+    title: 'Local music nights',
+    description: "Small rooms, loud nights, and the record stores in between.",
     city: 'Atlanta',
     authorId: 'u-theo',
-    cover: Photos.bookshelves,
-    stops: [
-      { postcardId: 'pc-criminal-crates' },
-      { postcardId: 'pc-sweet-auburn-lunch' },
-      { postcardId: 'pc-variety-front-row' },
-      { postcardId: 'pc-krog-tunnel' },
-      { postcardId: 'pc-jackson-blue-hour' },
+    cover: Photos.stageGlow,
+    categories: ['music'],
+    media: [
+      media('m-lm-1', Photos.stageGlow, 'Front row, basically', 'p-variety'),
+      media('m-lm-2', Photos.bookshelves, 'Crate digging before the show', 'p-criminal'),
+      media('m-lm-3', Photos.singerSmoke, 'Smoke machine went off at the perfect moment'),
+      media('m-lm-4', Photos.crowdHands, 'Hands up for the encore'),
+      media('m-lm-5', Photos.phoneAtShow, 'Everyone filmed this one'),
     ],
     visibility: 'public',
     status: 'published',
@@ -114,14 +134,15 @@ export const scrapbooks: Scrapbook[] = [
   {
     id: 'sb-demo-jo-visit',
     title: "Jo's visit weekend",
-    description: 'Coffee, a show, and the rooftop. Keep it a surprise.',
+    description: 'Coffee, brunch, and the rooftop. Keep it a surprise.',
     city: 'Atlanta',
     authorId: DEMO_USER_ID,
     cover: null,
-    stops: [
-      { postcardId: 'pc-demo-condesa-jo', time: 'Sat 09:00' },
-      { postcardId: 'pc-ponce-rooftop', time: 'Sat 18:30' },
-      { postcardId: 'pc-variety-front-row', time: 'Sat 21:00' },
+    categories: ['food'],
+    media: [
+      media('m-jo-1', Photos.latteCheers, 'First stop', 'p-condesa'),
+      media('m-jo-2', Photos.frenchToast, 'Brunch idea'),
+      media('m-jo-3', Photos.marketHall, 'Rooftop at sunset', 'p-ponce'),
     ],
     visibility: 'private',
     status: 'published',

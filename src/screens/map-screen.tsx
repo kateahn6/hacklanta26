@@ -15,6 +15,7 @@ import { PressableScale } from '@/components/ui/pressable-scale';
 import { SearchBar } from '@/components/ui/search-bar';
 import { CITY_REGION } from '@/data/content-source';
 import { useNow } from '@/hooks/use-now';
+import { scrapbookPlaceIds } from '@/lib/feed';
 import { buildMapPlaces, filterMapPlaces, type MapPlace } from '@/lib/map-places';
 import { notedMapStyle } from '@/lib/map-style';
 import { useContent } from '@/store/content';
@@ -51,7 +52,7 @@ export function MapScreen({ home = false }: MapScreenProps) {
   const allPlaces = buildMapPlaces(
     content,
     now,
-    scrapbook ? new Set(scrapbook.stops.map((s) => s.postcardId)) : undefined,
+    scrapbook ? scrapbookPlaceIds(scrapbook) : undefined,
   );
   const places = filterMapPlaces(allPlaces, category, query);
   const selectedIndex = places.findIndex((p) => p.place.id === selectedId);

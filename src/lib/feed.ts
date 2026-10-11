@@ -1,8 +1,8 @@
 import { categoryById } from '@/data/categories';
 import type { Content } from '@/store/content';
-import type { CategoryId, Photo, Place, Postcard, Scrapbook, User } from '@/types';
+import type { CategoryId, Photo, Place, Postcard, Scrapbook, ScrapbookMedia, User } from '@/types';
 
-import { canViewPostcard, isPostcardPublic, isScrapbookPublic } from './visibility';
+import { isPostcardPublic, isScrapbookPublic } from './visibility';
 
 export interface PostcardItem {
   kind: 'postcard';
@@ -20,8 +20,7 @@ export interface ScrapbookItem {
   scrapbook: Scrapbook;
   author: User;
   cover: Photo | null;
-  /** Stops the viewer is allowed to see, in order. */
-  stops: { postcard: Postcard; place: Place; time?: string }[];
+  media: ScrapbookMedia[];
   categories: CategoryId[];
 }
 
@@ -43,22 +42,21 @@ export function toPostcardItem(content: Content, postcard: Postcard): PostcardIt
   };
 }
 
-export function toScrapbookItem(content: Content, scrapbook: Scrapbook, now: number): ScrapbookItem {
-  const stops = scrapbook.stops.flatMap((stop) => {
-    const postcard = content.postcardById.get(stop.postcardId);
-    const place = postcard && content.placeById.get(postcard.placeId);
-    return postcard && place && canViewPostcard(postcard, now) ? [{ postcard, place, time: stop.time }] : [];
-  });
+export function toScrapbookItem(content: Content, scrapbook: Scrapbook): ScrapbookItem {
   return {
     kind: 'scrapbook',
     key: `scrapbook:${scrapbook.id}`,
     scrapbook,
     author: content.userById.get(scrapbook.authorId) ?? UNKNOWN_USER,
-    cover: scrapbook.cover ?? stops.find((s) => s.postcard.photo)?.postcard.photo ?? null,
-    stops,
-    categories: [...new Set(stops.flatMap((s) => s.place.categories))],
+    cover: scrapbook.cover ?? scrapbook.media[0]?.photo ?? null,
+    media: scrapbook.media,
+    categories: scrapbook.categories,
   };
 }
+
+/** Places linked from a scrapbook's media, for showing it on the map. */
+export const scrapbookPlaceIds = (scrapbook: Scrapbook) =>
+  new Set(scrapbook.media.flatMap((m) => (m.placeId ? [m.placeId] : [])));
 
 const newestFirst = (a: FeedItem, b: FeedItem) =>
   (b.kind === 'postcard' ? b.postcard.createdAt : b.scrapbook.createdAt).localeCompare(
@@ -72,8 +70,8 @@ export function buildPublicFeed(content: Content, now: number): FeedItem[] {
     .flatMap((p) => toPostcardItem(content, p) ?? []);
   const scrapbooks = content.scrapbooks
     .filter(isScrapbookPublic)
-    .map((s) => toScrapbookItem(content, s, now))
-    .filter((s) => s.stops.length > 0);
+    .map((s) => toScrapbookItem(content, s))
+    .filter((s) => s.media.length > 0);
   return [...postcards, ...scrapbooks].sort(newestFirst);
 }
 
@@ -91,7 +89,7 @@ export function matchesQuery(item: FeedItem, query: string): boolean {
           item.scrapbook.description,
           item.scrapbook.city,
           item.author.name,
-          ...item.stops.flatMap((s) => [s.place.name, s.place.neighborhood]),
+          ...item.media.map((m) => m.caption ?? ''),
         ];
   fields.push(...item.categories.map((c) => categoryById(c).label));
   return fields.some((field) => field.toLowerCase().includes(q));
