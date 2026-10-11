@@ -85,7 +85,6 @@ export function DiscoverScreen() {
       </View>
       {!filtering ? (
         <View style={styles.sharing}>
-          <SectionHeader title="Your friends&rsquo; map" detail="Swap a code to merge maps" />
           {inviteCode ? <AppText variant="display" style={styles.code}>{inviteCode}</AppText> : null}
           {shareError ? <Notice icon="warning-outline" tone="navy" message={shareError} /> : null}
           {shareDone ? <Notice icon="checkmark-circle-outline" message={shareDone} /> : null}
